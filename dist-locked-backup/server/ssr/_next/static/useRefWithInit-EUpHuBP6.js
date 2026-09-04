@@ -1,0 +1,1 @@
+import{i as e,r as t,t as n}from"./react-DNQhlH1z.js";var r=t({useRefWithInit:()=>o}),i=e(n(),1),a={};function o(e,t){let n=i.useRef(a);return n.current===a&&(n.current=e(t)),n}export{r as n,o as t};

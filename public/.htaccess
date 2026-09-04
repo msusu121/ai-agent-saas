@@ -1,0 +1,14 @@
+Options -MultiViews
+RewriteEngine On
+
+# Serve generated files and directories directly.
+RewriteCond %{REQUEST_FILENAME} -f [OR]
+RewriteCond %{REQUEST_FILENAME} -d
+RewriteRule ^ - [L]
+
+# Next.js static export creates route/index.html files.
+RewriteCond %{DOCUMENT_ROOT}/$1/index.html -f
+RewriteRule ^(.+?)/?$ $1/index.html [L]
+
+# Client-side fallback for any remaining application route.
+RewriteRule ^ index.html [L]
