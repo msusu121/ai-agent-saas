@@ -185,9 +185,9 @@ export async function enrichLeadFromPublicWebsite(
               organizationId: lead.organizationId,
               leadId: lead.id,
               name: 'Public business contact',
-              email: email?.toLowerCase(),
-              phone,
-              whatsapp,
+email: email?.toLowerCase() ?? null,
+               phone: phone ?? null,
+               whatsapp: whatsapp ?? null,
               source: 'PUBLIC_WEB_CRAWLER',
             },
           })]

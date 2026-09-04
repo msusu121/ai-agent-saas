@@ -163,8 +163,12 @@ async function searchProvider(
       organic?: Array<{ title?: string; link?: string; snippet?: string }>;
     };
     return (payload.organic ?? []).flatMap((item) => {
-      const candidate = webCandidate({ title: item.title, link: item.link,
-        snippet: item.snippet, location, industry, source: 'Google Search via Serper' });
+      const candidate = webCandidate({
+        ...(item.title !== undefined && { title: item.title }),
+        ...(item.link !== undefined && { link: item.link }),
+        ...(item.snippet !== undefined && { snippet: item.snippet }),
+        location, industry, source: 'Google Search via Serper'
+      });
       return candidate ? [candidate] : [];
     });
   }
@@ -184,8 +188,12 @@ async function searchProvider(
       };
     };
     return (payload.web?.results ?? []).flatMap((item) => {
-      const candidate = webCandidate({ title: item.title, link: item.url,
-        snippet: item.description, location, industry, source: 'Brave Search' });
+      const candidate = webCandidate({
+        ...(item.title !== undefined && { title: item.title }),
+        ...(item.url !== undefined && { link: item.url }),
+        ...(item.description !== undefined && { snippet: item.description }),
+        location, industry, source: 'Brave Search'
+      });
       return candidate ? [candidate] : [];
     });
   }
@@ -213,8 +221,12 @@ async function searchProvider(
       items?: Array<{ title?: string; link?: string; snippet?: string }>;
     };
     return (payload.items ?? []).flatMap((item) => {
-      const candidate = webCandidate({ title: item.title, link: item.link,
-        snippet: item.snippet, location, industry, source: 'Google Custom Search' });
+      const candidate = webCandidate({
+        ...(item.title !== undefined && { title: item.title }),
+        ...(item.link !== undefined && { link: item.link }),
+        ...(item.snippet !== undefined && { snippet: item.snippet }),
+        location, industry, source: 'Google Custom Search'
+      });
       return candidate ? [candidate] : [];
     });
   }
