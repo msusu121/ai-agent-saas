@@ -1,0 +1,250 @@
+2026-09-04T19:16:10: Invalid environment configuration {
+2026-09-04T19:16:10:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:10:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:10: }
+2026-09-04T19:16:12: Invalid environment configuration {
+2026-09-04T19:16:12:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:12:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:12: }
+2026-09-04T19:16:13: Invalid environment configuration {
+2026-09-04T19:16:13:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:13:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:13: }
+2026-09-04T19:16:14: Invalid environment configuration {
+2026-09-04T19:16:14:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:14:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:14: }
+2026-09-04T19:16:15: Invalid environment configuration {
+2026-09-04T19:16:15:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:15:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:15: }
+2026-09-04T19:16:16: Invalid environment configuration {
+2026-09-04T19:16:16:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:16:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:16: }
+2026-09-04T19:16:18: Invalid environment configuration {
+2026-09-04T19:16:18:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:18:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:18: }
+2026-09-04T19:16:20: Invalid environment configuration {
+2026-09-04T19:16:20:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:20:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:20: }
+2026-09-04T19:16:23: Invalid environment configuration {
+2026-09-04T19:16:23:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:23:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:23: }
+2026-09-04T19:16:26: Invalid environment configuration {
+2026-09-04T19:16:26:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:26:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:26: }
+2026-09-04T19:16:31: Invalid environment configuration {
+2026-09-04T19:16:31:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:31:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:31: }
+2026-09-04T19:16:37: Invalid environment configuration {
+2026-09-04T19:16:37:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:37:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:37: }
+2026-09-04T19:16:46: Invalid environment configuration {
+2026-09-04T19:16:46:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:16:46:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:16:46: }
+2026-09-04T19:17:00: Invalid environment configuration {
+2026-09-04T19:17:00:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:00:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:17:00: }
+2026-09-04T19:17:16: Invalid environment configuration {
+2026-09-04T19:17:16:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:16:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:17:16: }
+2026-09-04T19:17:32: Invalid environment configuration {
+2026-09-04T19:17:32:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:32:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:17:32: }
+2026-09-04T19:17:48: Invalid environment configuration {
+2026-09-04T19:17:48:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:17:48:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:17:48: }
+2026-09-04T19:18:03: Invalid environment configuration {
+2026-09-04T19:18:03:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:03:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:18:03: }
+2026-09-04T19:18:19: Invalid environment configuration {
+2026-09-04T19:18:19:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:19:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:18:19: }
+2026-09-04T19:18:35: Invalid environment configuration {
+2026-09-04T19:18:35:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:35:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:18:35: }
+2026-09-04T19:18:51: Invalid environment configuration {
+2026-09-04T19:18:51:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:18:51:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:18:51: }
+2026-09-04T19:19:07: Invalid environment configuration {
+2026-09-04T19:19:07:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:07:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:19:07: }
+2026-09-04T19:19:22: Invalid environment configuration {
+2026-09-04T19:19:22:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:22:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:19:22: }
+2026-09-04T19:19:38: Invalid environment configuration {
+2026-09-04T19:19:38:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:38:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:19:38: }
+2026-09-04T19:19:54: Invalid environment configuration {
+2026-09-04T19:19:54:   WEB_ORIGIN: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   DATABASE_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   REDIS_URL: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   JWT_ACCESS_SECRET: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   CREDENTIAL_ENCRYPTION_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   MINIO_ENDPOINT: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   MINIO_ACCESS_KEY: [ 'Invalid input: expected string, received undefined' ],
+2026-09-04T19:19:54:   MINIO_SECRET_KEY: [ 'Invalid input: expected string, received undefined' ]
+2026-09-04T19:19:54: }

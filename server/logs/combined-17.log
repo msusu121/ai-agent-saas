@@ -1,0 +1,8 @@
+2026-09-04T19:13:56: 
+> @sales-agent/api@0.1.0 start
+> node --env-file=.env dist/index.js
+
+2026-09-04T19:14:42: 
+> @sales-agent/api@0.1.0 start
+> node --env-file=.env dist/index.js
+

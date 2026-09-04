@@ -1,0 +1,18 @@
+2026-09-04T19:09:16: 
+2026-09-04T19:09:16: > @sales-agent/api@0.1.0 worker
+2026-09-04T19:09:16: > tsx watch --env-file ../.env --env-file .env src/workers/index.ts
+2026-09-04T19:09:16: 
+2026-09-04T19:09:19: Workers ready: campaign discovery, autopilot, outreach (1 scheduled organizations)
+2026-09-04T19:12:11: 
+2026-09-04T19:12:11: > @sales-agent/api@0.1.0 worker
+2026-09-04T19:12:11: > tsx watch --env-file ../.env --env-file .env src/workers/index.ts
+2026-09-04T19:12:11: 
+2026-09-04T19:12:25: 
+2026-09-04T19:12:25: > @sales-agent/api@0.1.0 worker
+2026-09-04T19:12:25: > tsx watch --env-file ../.env --env-file .env src/workers/index.ts
+2026-09-04T19:12:25: 
+2026-09-04T19:12:32: 
+2026-09-04T19:12:32: > @sales-agent/api@0.1.0 worker
+2026-09-04T19:12:32: > tsx watch --env-file ../.env --env-file .env src/workers/index.ts
+2026-09-04T19:12:32: 
+2026-09-04T19:12:36: Workers ready: campaign discovery, autopilot, outreach (1 scheduled organizations)

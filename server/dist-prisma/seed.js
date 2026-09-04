@@ -66,7 +66,7 @@ async function main() {
             locations: ['Mombasa', 'Kwale', 'Kilifi'],
             industries: ['Private School', 'Hospitality', 'Healthcare', 'Logistics'],
             targetCount: 100,
-            status: CampaignStatus.QUALIFYING,
+            status: CampaignStatus.COMPLETED,
         },
     });
     const sequence = await prisma.sequence.create({
