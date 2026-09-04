@@ -2,8 +2,9 @@ module.exports = {
   apps: [
     {
       name: "sales-api",
-      script: "./dist/index.js",
-      cwd: "/opt/sales-agent-api/server",
+      script: "npm",
+      args: "start",
+      cwd: "/var/www/ai-agent-saas/server",
       instances: "max",
       exec_mode: "cluster",
       env: {
@@ -27,8 +28,9 @@ module.exports = {
     },
     {
       name: "sales-worker",
-      script: "./dist/workers/index.js",
-      cwd: "/opt/sales-agent-api/server",
+      script: "npm",
+      args: "run worker",
+      cwd: "/var/www/ai-agent-saas/server",
       instances: 1,
       exec_mode: "fork",
       env: {
