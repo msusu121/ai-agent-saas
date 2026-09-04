@@ -1,0 +1,18 @@
+2026-09-04T19:20:01: (node:976217) Warning: NodeVersionSupportWarning: The AWS SDK for JavaScript (v3)
+2026-09-04T19:20:01: versions published after the first week of January 2027
+2026-09-04T19:20:01: will require node >=22. You are running node v20.18.1.
+2026-09-04T19:20:01: 
+2026-09-04T19:20:01: To continue receiving updates to AWS services, bug fixes,
+2026-09-04T19:20:01: and security updates please upgrade to node >=22.
+2026-09-04T19:20:01: 
+2026-09-04T19:20:01: More information can be found at: https://a.co/c895JFp
+2026-09-04T19:20:01: (Use `node --trace-warnings ...` to show where the warning was created)
+2026-09-04T19:32:26: (node:1003296) Warning: NodeVersionSupportWarning: The AWS SDK for JavaScript (v3)
+2026-09-04T19:32:26: versions published after the first week of January 2027
+2026-09-04T19:32:26: will require node >=22. You are running node v20.18.1.
+2026-09-04T19:32:26: 
+2026-09-04T19:32:26: To continue receiving updates to AWS services, bug fixes,
+2026-09-04T19:32:26: and security updates please upgrade to node >=22.
+2026-09-04T19:32:26: 
+2026-09-04T19:32:26: More information can be found at: https://a.co/c895JFp
+2026-09-04T19:32:26: (Use `node --trace-warnings ...` to show where the warning was created)

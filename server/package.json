@@ -10,7 +10,7 @@
     "dev": "tsx watch --env-file ../.env --env-file .env src/index.ts",
     "dev:compiled": "npm run build && npm run start",
     "build": "tsc -p tsconfig.json",
-    "start": "node --env-file ../.env --env-file .env dist/index.js",
+    "start": "node --env-file=.env dist/index.js",
     "worker": "tsx watch --env-file ../.env --env-file .env src/workers/index.ts",
     "worker:compiled": "node --env-file ../.env --env-file .env dist/workers/index.js",
     "prisma:generate": "prisma generate",
