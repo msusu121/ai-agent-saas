@@ -1,0 +1,16 @@
+'use client';
+
+import { useState } from 'react';
+
+type Delivery = { id: string; channel: string; status: string; recipient: string; subject: string | null; body: string; createdAt: string; sentAt: string | null; failureReason?: string | null; providerId?: string | null; lead: { name: string } };
+
+export function DeliveryHistory({ messages, refresh }: { messages: Delivery[]; refresh: () => void }) {
+  const [filter, setFilter] = useState('ALL');
+  const visible = messages.filter(message => filter === 'ALL' || (filter === 'QUEUED' ? ['SCHEDULED', 'SENDING'].includes(message.status) : filter === 'DRAFT' ? ['DRAFT', 'NEEDS_REVIEW'].includes(message.status) : message.status === filter));
+  return <section className="mb-6 rounded-2xl border bg-white p-5" aria-label="Delivery history">
+    <div className="flex flex-wrap items-center justify-between gap-3"><h2 className="font-bold">Delivery history</h2><button type="button" onClick={refresh} className="text-sm font-semibold text-violet-700">Refresh status</button></div>
+    <p className="mt-2 text-sm text-slate-600">Latest 200 messages. Sent means accepted by the provider, not confirmed inbox delivery. Drafts have not been sent.</p>
+    <div className="my-4 flex flex-wrap gap-2">{['ALL', 'QUEUED', 'SENT', 'FAILED', 'STOPPED', 'DRAFT'].map(status => <button key={status} type="button" aria-pressed={filter === status} onClick={() => setFilter(status)} className={`rounded-full border px-3 py-1 text-sm ${filter === status ? 'bg-violet-600 text-white' : ''}`}>{status === 'ALL' ? 'All' : status === 'QUEUED' ? 'Queued / sending' : status.charAt(0) + status.slice(1).toLowerCase()}</button>)}</div>
+    <div className="max-h-96 overflow-auto"><table className="w-full text-left text-sm"><thead><tr className="border-b"><th className="p-2">Business / recipient</th><th className="p-2">Channel</th><th className="p-2">Status</th><th className="p-2">Details</th></tr></thead><tbody>{visible.map(message => <tr key={message.id} className="border-b align-top"><td className="p-2"><div className="font-semibold">{message.lead.name}</div><div>{message.recipient}</div></td><td className="p-2">{message.channel}</td><td className="p-2"><span className={message.status === 'FAILED' ? 'font-semibold text-red-700' : message.status === 'SENT' ? 'font-semibold text-emerald-700' : ''}>{message.status.replaceAll('_', ' ')}</span><div className="text-xs text-slate-500">{new Date(message.sentAt ?? message.createdAt).toLocaleString()}</div></td><td className="p-2">{message.failureReason && <p className="text-red-700">{message.failureReason}</p>}{message.status === 'SCHEDULED' && <p className="text-slate-600">Waiting for the delivery worker. If this persists, check the backend worker and Redis.</p>}<details><summary className="cursor-pointer text-violet-700">View message</summary><p className="font-semibold">{message.subject}</p><p className="whitespace-pre-wrap">{message.body}</p><p className="mt-2 break-all text-xs">Message ID: {message.id}</p>{message.providerId && <p className="break-all text-xs">Provider reference: {message.providerId}</p>}</details></td></tr>)}</tbody></table>{!visible.length && <p className="p-4 text-sm text-slate-500">No messages in this category.</p>}</div>
+  </section>;
+}

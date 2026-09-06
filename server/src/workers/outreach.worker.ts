@@ -53,7 +53,7 @@ outreachWorker.on('failed', async (job, error) => {
   const data = job?.data as { messageId?: string } | undefined;
   if (data?.messageId) {
     await prisma.outreachMessage.updateMany({
-      where: { id: data.messageId, status: 'SENDING' },
+      where: { id: data.messageId, status: { in: ['SCHEDULED', 'SENDING'] } },
       data: { status: 'FAILED', failureReason: error.message.slice(0, 500) },
     });
   }

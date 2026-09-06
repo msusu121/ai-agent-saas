@@ -10,6 +10,7 @@ type CompletionInput = {
   system: string;
   prompt: string;
   responseSchema?: z.ZodType;
+  parseResponse?: (text: string) => unknown;
 };
 
 type ProviderConfiguration = {
@@ -159,6 +160,7 @@ export async function completeWithOrganizationModel(
       'AI_PROVIDER_ERROR',
     );
 
+  if (input.parseResponse) return input.parseResponse(text);
   let parsed: unknown;
   try {
     parsed = JSON.parse(text);
