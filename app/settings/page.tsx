@@ -87,6 +87,7 @@ export default function SettingsPage() {
   const [phoneNumberId, setPhoneNumberId] = useState('');
   const [searchEngineId, setSearchEngineId] = useState('');
   const [modelId, setModelId] = useState('');
+  const [modelDrafts, setModelDrafts] = useState<Record<string, string>>({});
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -165,6 +166,13 @@ export default function SettingsPage() {
           : 'Unable to update credential',
       );
     }
+  }
+  async function saveModel(item: Credential) {
+    const model = modelDrafts[item.id]?.trim();
+    if (!model) return;
+    await apiRequest(`/credentials/${item.id}`, { method: 'PATCH', body: JSON.stringify({ configuration: { model } }) });
+    setNotice(`Model saved for ${item.label}`);
+    await load();
   }
   async function deleteCredential(item: Credential) {
     try {
@@ -409,6 +417,18 @@ export default function SettingsPage() {
                         <p className="mt-1 text-[10px] text-[#817d90]">
                           {humanize(item.provider)} · key ending {item.lastFour}
                         </p>
+                        {aiProviders.includes(item.provider) ? (
+                          <div className="mt-2 flex gap-2">
+                            <Input
+                              aria-label={`Model ID for ${item.label}`}
+                              className="h-8 text-[11px]"
+                              placeholder={item.provider === 'OPENROUTER' ? 'openrouter/free' : 'Model ID'}
+                              value={modelDrafts[item.id] ?? ''}
+                              onChange={(event) => setModelDrafts((current) => ({ ...current, [item.id]: event.target.value }))}
+                            />
+                            <Button type="button" size="sm" variant="outline" onClick={() => void saveModel(item)}>Save model</Button>
+                          </div>
+                        ) : null}
                         <p className="mt-2 text-[9px] text-[#9994a4]">
                           Updated{' '}
                           {new Date(item.updatedAt).toLocaleDateString()}
