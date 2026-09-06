@@ -26,7 +26,7 @@ const providers: Partial<Record<CredentialProvider, ProviderConfiguration>> = {
   },
   OPENROUTER: {
     endpoint: 'https://openrouter.ai/api/v1/chat/completions',
-    model: 'openai/gpt-5-mini',
+    model: 'openrouter/free',
     format: 'openai',
   },
   GROQ: {

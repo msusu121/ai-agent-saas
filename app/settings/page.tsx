@@ -86,6 +86,7 @@ export default function SettingsPage() {
   const [fromName, setFromName] = useState('Sales Agent');
   const [phoneNumberId, setPhoneNumberId] = useState('');
   const [searchEngineId, setSearchEngineId] = useState('');
+  const [modelId, setModelId] = useState('');
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -125,6 +126,8 @@ export default function SettingsPage() {
           ? { phoneNumberId, apiVersion: 'v21.0' }
           : provider === 'GOOGLE_CUSTOM_SEARCH'
             ? { searchEngineId }
+            : aiProviders.includes(provider)
+              ? (modelId.trim() ? { model: modelId.trim() } : undefined)
             : undefined;
       await apiRequest('/credentials', {
         method: 'POST',
@@ -348,6 +351,14 @@ export default function SettingsPage() {
                         placeholder="Programmable Search Engine ID (cx)"
                         value={searchEngineId}
                         onChange={(e) => setSearchEngineId(e.target.value)}
+                      />
+                    ) : null}
+                    {aiProviders.includes(provider) ? (
+                      <Input
+                        aria-label="AI model ID"
+                        placeholder="Model ID (for example: openrouter/free or provider/model:free)"
+                        value={modelId}
+                        onChange={(e) => setModelId(e.target.value)}
                       />
                     ) : null}
                   </div>
