@@ -1,0 +1,3 @@
+ALTER TABLE "Campaign"
+ADD COLUMN "discoverySources" TEXT[] NOT NULL DEFAULT ARRAY['GOOGLE_PLACES', 'WEB']::TEXT[],
+ADD COLUMN "discoveryReport" JSONB;

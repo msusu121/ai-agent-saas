@@ -7,7 +7,7 @@ import { apiRequest } from '@/lib/api';
 export const sourceLabels: Record<string, string> = {
   GOOGLE_PLACES: 'Google Places', INSTAGRAM: 'Instagram', FACEBOOK: 'Facebook', WEB: 'Web search',
 };
-export const defaultSources = ['GOOGLE_PLACES', 'INSTAGRAM', 'FACEBOOK'];
+export const defaultSources = ['GOOGLE_PLACES', 'WEB', 'INSTAGRAM', 'FACEBOOK'];
 
 export function DiscoverySources({ value, onChange }: { value: string[]; onChange: (value: string[]) => void }) {
   const [sources, setSources] = useState<Array<{ source: string; ready: boolean }>>([]);

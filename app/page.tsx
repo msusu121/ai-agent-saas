@@ -21,6 +21,7 @@ import { SectionShell } from '@/components/section-shell';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { apiRequest } from '@/lib/api';
+import { DiscoverySources, defaultSources } from '@/components/discovery-sources';
 
 type Contact = {
   id: string;
@@ -116,6 +117,7 @@ export default function Dashboard() {
   const [industry, setIndustry] = useState('Private schools');
   const [businessSize, setBusinessSize] = useState('Any size');
   const [target, setTarget] = useState(5);
+  const [discoverySources, setDiscoverySources] = useState<string[]>(defaultSources);
   async function load() {
     try {
       const [l, c, m] = await Promise.all([
@@ -163,6 +165,7 @@ export default function Dashboard() {
             industries: [industry],
             businessSize,
             targetCount: target,
+            discoverySources,
           }),
         },
       );
@@ -338,6 +341,7 @@ export default function Dashboard() {
                 {saving ? 'Starting search…' : activeCampaign ? `${activeCampaign.status.toLowerCase().replace('_', ' ')}…` : 'Find Opportunities'}
               </Button>
             </div>
+            <DiscoverySources value={discoverySources} onChange={setDiscoverySources} />
             <div className="mt-4 flex flex-wrap items-center justify-between gap-2 border-t pt-3 text-[10px] text-[#817d90]">
               <span className="flex items-center gap-1.5">
                 <Sparkles className="size-3.5 text-violet-600" />
