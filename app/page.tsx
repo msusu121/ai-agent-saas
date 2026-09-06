@@ -33,6 +33,7 @@ type Contact = {
   isDecisionMaker: boolean;
 };
 type Lead = {
+  campaignId: string | null;
   id: string;
   name: string;
   status: string;
@@ -47,6 +48,7 @@ type Lead = {
   contacts: Contact[];
 };
 type Campaign = {
+  discoveryReport?: { qualification?: { failures: Array<{ leadId: string; message: string }> } } | null;
   id: string;
   name: string;
   status: string;
@@ -128,7 +130,7 @@ export default function Dashboard() {
       setLeads(l.leads);
       setCampaigns(c.campaigns);
       setMessages(m.messages);
-      setSelected((current) => current ?? l.leads[0] ?? null);
+      setSelected((current) => l.leads.find(lead => lead.id === current?.id) ?? current ?? l.leads[0] ?? null);
       const latestFailure = c.campaigns.find(
         (campaign) => campaign.status === 'FAILED' && campaign.failureReason,
       );
@@ -184,6 +186,14 @@ export default function Dashboard() {
     } finally {
       setSaving(false);
     }
+  }
+  async function retryQualification() {
+    if (!selected?.campaignId) return;
+    try {
+      await apiRequest(`/campaigns/${selected.campaignId}/qualify`, { method: 'POST', body: JSON.stringify({}) });
+      setNotice('Qualification queued for existing leads. Discovery will not run again.');
+      await load();
+    } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to retry qualification'); }
   }
   async function generateDraft() {
     if (!selected) return;
@@ -393,7 +403,7 @@ export default function Dashboard() {
                         <Badge
                           className={`h-[17px] px-1.5 text-[8px] ${lead.score >= 80 ? 'bg-emerald-50 text-emerald-700' : 'bg-blue-50 text-blue-700'}`}
                         >
-                          {lead.score >= 80 ? 'High Match' : 'Good Match'}
+                          {!lead.aiSummary ? 'Not scored' : lead.score >= 80 ? 'High Match' : lead.score >= 60 ? 'Good Match' : 'Low Match'}
                         </Badge>
                       </div>
                       <p className="mt-1 flex items-center gap-1 text-[9px] text-[#817d90]">
@@ -413,12 +423,12 @@ export default function Dashboard() {
                     <p className="mt-1 line-clamp-2 text-[9px] leading-4 text-[#716c82]">
                       {lead.signals[0]?.value ??
                         lead.aiSummary ??
-                        'Qualified from observed public signals.'}
+                        'Qualification has not completed. Retry qualification to score this lead.'}
                     </p>
                   </div>
                   <div className="text-center">
                     <span className="mx-auto grid size-12 place-items-center rounded-full border-[3px] border-violet-500 text-sm font-extrabold text-violet-700">
-                      {lead.score}%
+                      {lead.aiSummary ? `${lead.score}%` : '—'}
                     </span>
                     <p className="mt-1 text-[8px] text-[#817d90]">
                       Match Score
@@ -452,7 +462,7 @@ export default function Dashboard() {
                         {selected.name}
                       </h2>
                       <Badge className="bg-emerald-50 text-emerald-700">
-                        High Match
+                        {!selected.aiSummary ? 'Not scored' : selected.score >= 80 ? 'High Match' : selected.score >= 60 ? 'Good Match' : 'Low Match'}
                       </Badge>
                     </div>
                     <p className="mt-1 text-[10px] text-[#817d90]">
@@ -477,8 +487,12 @@ export default function Dashboard() {
                   <p className="mt-2 text-[10px] leading-4 text-[#625d70]">
                     {selected.aiSummary ??
                       selected.signals[0]?.value ??
-                      'AI research is gathering evidence for this business.'}
+                      'Qualification has not completed for this business.'}
                   </p>
+                  {!selected.aiSummary && selected.campaignId ? <div className="mt-3 space-y-2">
+                    <p role="status" className="text-xs text-amber-700">{campaigns.find(c => c.id === selected.campaignId)?.discoveryReport?.qualification?.failures.find(f => f.leadId === selected.id)?.message ?? 'No completed AI score yet.'}</p>
+                    <Button type="button" variant="outline" disabled={searchInProgress} onClick={() => void retryQualification()}>Retry unfinished qualification</Button>
+                  </div> : null}
                 </div>
                 {selected.recommendedOffer ? (
                   <div className="mt-4 rounded-xl bg-violet-50 p-3">

@@ -8,22 +8,22 @@ import { deliverOutreach } from '../modules/autopilot/channel-delivery.service.j
 export const outreachWorker = new Worker(
   'outreach-delivery',
   async (job) => {
-    const { messageId, organizationId } = z.object({ messageId: z.string(), organizationId: z.string() }).parse(job.data);
+    const { messageId, organizationId, manualApproval } = z.object({ messageId: z.string(), organizationId: z.string(), manualApproval: z.boolean().default(false) }).parse(job.data);
     const [message, config] = await Promise.all([
       prisma.outreachMessage.findFirst({ where: { id: messageId, organizationId }, include: { lead: true } }),
       prisma.autopilotConfig.findUnique({ where: { organizationId } }),
     ]);
-    if (!message || !config?.enabled || message.status !== 'SCHEDULED') return { skipped: true };
-    if (message.lead.status === 'SUPPRESSED' || (config.stopOnReply && message.lead.status === 'REPLIED')) {
+    if (!message || (!manualApproval && !config?.enabled) || message.status !== 'SCHEDULED') return { skipped: true };
+    if (message.lead.status === 'SUPPRESSED' || (!manualApproval && config?.stopOnReply && message.lead.status === 'REPLIED')) {
       await prisma.outreachMessage.update({ where: { id: message.id }, data: { status: 'STOPPED' } });
       return { stopped: true };
     }
 
-    const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: config.timezone }).format(new Date());
+    const dateKey = new Intl.DateTimeFormat('en-CA', { timeZone: config?.timezone ?? 'UTC' }).format(new Date());
     const rateKey = `outreach:${organizationId}:${dateKey}`;
     const sentToday = await redis.incr(rateKey);
     if (sentToday === 1) await redis.expire(rateKey, 172_800);
-    if (sentToday > config.dailyLimit) {
+    if (sentToday > (config?.dailyLimit ?? 50)) {
       await redis.decr(rateKey);
       throw new Error('Organization daily outreach limit reached');
     }

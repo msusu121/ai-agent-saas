@@ -80,7 +80,12 @@ router.post('/:id/approve', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandl
   if (!['DRAFT', 'NEEDS_REVIEW'].includes(message.status)) throw new AppError(409, 'Message is not awaiting approval', 'INVALID_OUTREACH_STATE');
   const scheduledFor = z.object({ scheduledFor: z.coerce.date().optional() }).parse(request.body).scheduledFor ?? new Date();
   await prisma.outreachMessage.update({ where: { id: message.id }, data: { status: 'SCHEDULED', scheduledFor } });
-  await outreachQueue.add('deliver', { messageId: message.id, organizationId }, { delay: Math.max(0, scheduledFor.getTime() - Date.now()), jobId: `outreach:${message.id}` });
+  try {
+    await outreachQueue.add('deliver', { messageId: message.id, organizationId, manualApproval: true }, { delay: Math.max(0, scheduledFor.getTime() - Date.now()), jobId: `outreach-${message.id}` });
+  } catch (error) {
+    await prisma.outreachMessage.updateMany({ where: { id: message.id, status: 'SCHEDULED' }, data: { status: message.status } });
+    throw error;
+  }
   await prisma.auditLog.create({ data: { organizationId, userId: request.auth!.userId, action: 'OUTREACH_APPROVE', resourceType: 'OutreachMessage', resourceId: message.id } });
   response.status(202).json({ id: message.id, status: 'SCHEDULED', scheduledFor });
 }));

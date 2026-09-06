@@ -76,7 +76,6 @@ export async function completeWithOrganizationModel(
     unknown
   >;
   const configuredModel =
-    ['OPENAI', 'OPENROUTER'].includes(credential.provider) &&
     typeof storedConfiguration.model === 'string'
       ? storedConfiguration.model.trim()
       : '';
@@ -135,7 +134,7 @@ export async function completeWithOrganizationModel(
   if (!response.ok)
     throw new AppError(
       502,
-      `AI provider request failed (${response.status})`,
+      `${credential.provider} model ${model}: ${response.status === 429 ? 'rate limit reached; retry after the provider limit resets' : response.status === 402 ? 'credits exhausted or payment required' : response.status === 401 || response.status === 403 ? 'credential rejected or model access denied' : response.status === 404 ? 'model or endpoint not found' : 'provider request failed'} (${response.status})`,
       'AI_PROVIDER_ERROR',
     );
   const payload = (await response.json()) as Record<string, unknown>;

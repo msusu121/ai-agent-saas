@@ -6,7 +6,7 @@ export const campaignQueue = new Queue('campaign-discovery', {
   connection: queueRedis,
   defaultJobOptions: {
     attempts: 3,
-    backoff: { type: 'exponential', delay: 3_000 },
+    backoff: { type: 'exponential', delay: 60_000 },
     removeOnComplete: { age: 86_400, count: 1_000 },
     removeOnFail: { age: 604_800 },
   },

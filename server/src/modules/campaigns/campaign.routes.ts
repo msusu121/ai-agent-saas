@@ -74,6 +74,24 @@ router.delete('/:id', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandler(asy
   response.status(204).end();
 }));
 
+router.post('/:id/qualify', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandler(async (request, response) => {
+  const organizationId = request.auth!.organizationId!;
+  const campaignId = String(request.params.id);
+  const campaign = await prisma.campaign.findFirst({ where: { id: campaignId, organizationId } });
+  if (!campaign) throw new AppError(404, 'Campaign not found', 'NOT_FOUND');
+  const unscored = await prisma.lead.count({ where: { campaignId, organizationId, aiSummary: null, status: 'DISCOVERED' } });
+  if (!unscored) throw new AppError(409, 'No unscored leads in this campaign', 'NO_UNSCORED_LEADS');
+  const claimed = await prisma.campaign.updateMany({ where: { id: campaignId, organizationId, status: { in: ['DRAFT', 'READY', 'PAUSED', 'FAILED', 'COMPLETED'] } }, data: { status: 'QUEUED' } });
+  if (!claimed.count) throw new AppError(409, 'Campaign is already processing', 'CAMPAIGN_ALREADY_RUNNING');
+  try {
+    await campaignQueue.add('qualify-existing', { campaignId, organizationId, qualificationOnly: true }, { jobId: `qualify-${campaignId}-${Date.now()}` });
+  } catch (error) {
+    await prisma.campaign.updateMany({ where: { id: campaignId, status: 'QUEUED' }, data: { status: campaign.status } });
+    throw error;
+  }
+  response.status(202).json({ campaignId, status: 'QUEUED' });
+}));
+
 router.post('/:id/run', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandler(async (request, response) => {
   const organizationId = request.auth!.organizationId!;
   const campaignId = String(request.params.id);
@@ -89,7 +107,7 @@ router.post('/:id/run', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandler(a
   if (!campaign.discoverySources.some((source) => sourceReady(source, discoveryCredentials.map((item) => item.provider)))) throw new AppError(409, 'Connect a provider for your selected sources in Settings. Instagram and Facebook require an Apify API token', 'DISCOVERY_PROVIDER_REQUIRED');
   if (!aiCredential) throw new AppError(409, 'Connect a supported AI provider in Settings before running a search', 'AI_PROVIDER_REQUIRED');
   await prisma.campaign.update({ where: { id: campaign.id }, data: { status: 'QUEUED', discoveryReport: { sources: [] } } });
-  const job = await campaignQueue.add('discover-and-qualify', { campaignId: campaign.id, organizationId }, { jobId: `campaign:${campaign.id}:${Date.now()}` });
+  const job = await campaignQueue.add('discover-and-qualify', { campaignId: campaign.id, organizationId }, { jobId: `campaign-${campaign.id}-${Date.now()}` });
   response.status(202).json({ campaignId: campaign.id, jobId: job.id, status: 'QUEUED' });
 }));
 
