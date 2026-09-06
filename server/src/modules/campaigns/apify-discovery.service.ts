@@ -28,7 +28,7 @@ export function apifyCandidate(item: Record<string, unknown>, source: SocialSour
   const name = str(item.fullName) || str(item.title) || str(item.username);
   if (!website || !name) return null;
   const evidence: Record<string, unknown> = {};
-  for (const key of ['id', 'pageId', 'username', 'biography', 'intro', 'info', 'externalUrl', 'website', 'categories', 'businessCategoryName', 'isBusinessAccount', 'followersCount', 'followers', 'address']) {
+  for (const key of ['id', 'pageId', 'username', 'biography', 'intro', 'info', 'externalUrl', 'website', 'email', 'phone', 'whatsapp', 'categories', 'businessCategoryName', 'isBusinessAccount', 'followersCount', 'followers', 'address']) {
     const value = item[key];
     if (typeof value === 'string') evidence[key] = str(value);
     else if (typeof value === 'number' || typeof value === 'boolean') evidence[key] = value;

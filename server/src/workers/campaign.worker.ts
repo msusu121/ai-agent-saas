@@ -37,6 +37,11 @@ export const campaignWorker = new Worker(
         responseSchema: qualificationSchema,
       }) as z.infer<typeof qualificationSchema>;
       await prisma.$transaction(async (transaction) => {
+        const raw = (enrichedLead?.rawSignals ?? lead.rawSignals) as Record<string, unknown> | null;
+        const email = typeof raw?.email === 'string' ? raw.email.toLowerCase() : null;
+        const phone = typeof raw?.phone === 'string' ? raw.phone : null;
+        const whatsapp = typeof raw?.whatsapp === 'string' ? raw.whatsapp : null;
+        if (email || phone || whatsapp) await transaction.contact.create({ data: { leadId: lead.id, name: lead.name, email, phone, whatsapp, source: 'PUBLIC_WEB_CRAWLER' } });
         await transaction.lead.update({
           where: { id: lead.id },
           data: { score: result.score, aiSummary: result.summary, recommendedOffer: result.recommendedOffer, status: result.score >= 60 ? 'QUALIFIED' : 'DISCOVERED' },

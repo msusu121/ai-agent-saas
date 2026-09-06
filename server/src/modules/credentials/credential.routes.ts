@@ -60,6 +60,7 @@ router.patch('/:id', asyncHandler(async (request, response) => {
     label: z.string().min(2).max(60).optional(),
     secret: z.string().min(8).max(8_000).optional(),
     isActive: z.boolean().optional(),
+    configuration: z.object({ model: z.string().min(1).max(200) }).optional(),
   }).refine((value) => Object.keys(value).length > 0, 'At least one field is required').parse(request.body);
   const organizationId = request.auth!.organizationId!;
   const credentialId = String(request.params.id);
@@ -72,6 +73,7 @@ router.patch('/:id', asyncHandler(async (request, response) => {
       ...(input.label ? { label: input.label } : {}),
       ...(typeof input.isActive === 'boolean' ? { isActive: input.isActive } : {}),
       ...(input.secret ? { ...encrypted!, lastFour: input.secret.slice(-4) } : {}),
+      ...(input.configuration ? { configuration: input.configuration as Prisma.InputJsonValue } : {}),
     },
     select: { id: true, provider: true, label: true, lastFour: true, isActive: true, createdAt: true, updatedAt: true },
   });
