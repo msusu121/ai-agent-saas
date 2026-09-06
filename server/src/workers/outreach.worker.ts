@@ -44,6 +44,7 @@ export const outreachWorker = new Worker(
       where: { id: message.id },
       data: { status: 'SENT', sentAt: new Date(), providerId },
     });
+    console.info(`[outreach] delivered message=${message.id} channel=${message.channel} recipient=${message.recipient} provider=${providerId}`);
     return { sent: true };
   },
   { connection: queueRedis, concurrency: 5, limiter: { max: 20, duration: 1_000 } },
@@ -56,5 +57,6 @@ outreachWorker.on('failed', async (job, error) => {
       where: { id: data.messageId, status: { in: ['SCHEDULED', 'SENDING'] } },
       data: { status: 'FAILED', failureReason: error.message.slice(0, 500) },
     });
+    console.error(`[outreach] delivery failed message=${data.messageId}: ${error.message}`);
   }
 });
