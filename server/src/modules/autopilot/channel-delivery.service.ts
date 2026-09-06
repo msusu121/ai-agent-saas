@@ -14,6 +14,9 @@ const whatsappConfiguration = z.object({
   businessAccountId: z.string().min(3),
   phoneNumberId: z.string().min(3),
   apiVersion: z.string().regex(/^v\d+\.\d+$/).default('v21.0'),
+  accessToken: z.string().min(10),
+  templateName: z.string().min(1).max(50).default("sales_agent_outreach"),
+  templateLanguage: z.string().default('en'),
 });
 
 async function checkedJson(response: Response): Promise<Record<string, unknown>> {
@@ -73,20 +76,119 @@ async function sendEmail(message: OutreachMessage): Promise<string> {
   return response.headers.get('x-message-id') ?? message.id;
 }
 
-async function sendWhatsApp(message: OutreachMessage): Promise<string> {
+function splitBodyForTemplate(body: string, maxParams: number = 3): string[] {
+  const placeholderRegex = /\{param(\d+)\}/gi;
+  const placeholders = body.match(placeholderRegex);
+
+  if (placeholders && placeholders.length <= maxParams) {
+    const parts: string[] = [];
+    let lastIndex = 0;
+    let match;
+    const regex = new RegExp(placeholderRegex.source, placeholderRegex.flags);
+
+    while ((match = regex.exec(body)) !== null) {
+      const index = parseInt(match[1], 10) - 1;
+      const beforeText = body.slice(lastIndex, match.index).trim();
+      if (parts.length <= index) {
+        parts.length = index + 1;
+      }
+      parts[index] = beforeText || `Part ${index + 1}`;
+      lastIndex = regex.lastIndex;
+    }
+    const afterLast = body.slice(lastIndex).trim();
+    if (afterLast) parts.push(afterLast);
+    while (parts.length < maxParams) {
+      parts.push(`Part ${parts.length + 1}`);
+    }
+    return parts.slice(0, maxParams);
+  }
+
+  const sentences = body.split(/(?<=[.!?])\s+/).filter(Boolean);
+  const chunks: string[] = [];
+  const chunkSize = Math.max(1, Math.ceil(sentences.length / maxParams));
+  for (let i = 0; i < maxParams && i * chunkSize < sentences.length; i++) {
+    chunks.push(sentences.slice(i * chunkSize, (i + 1) * chunkSize).join(' ').trim());
+  }
+  while (chunks.length < maxParams) chunks.push(`Part ${chunks.length + 1}`);
+  return chunks.slice(0, maxParams);
+}
+
+async function sendWhatsApp(message: OutreachMessage & { lead?: { name: string; industry: string; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
   const credential = await prisma.providerCredential.findFirst({
     where: { organizationId: message.organizationId, isActive: true, provider: 'WHATSAPP' },
     orderBy: { updatedAt: 'desc' },
   });
   if (!credential) throw new AppError(409, 'Connect WhatsApp Business before sending', 'WHATSAPP_PROVIDER_REQUIRED');
-  whatsappConfiguration.parse(credential.configuration);
-  throw new AppError(
-    409,
-    'Cold WhatsApp outreach requires a Meta-approved message template. Create, submit, and sync an approved template before sending.',
-    'WHATSAPP_TEMPLATE_REQUIRED',
-  );
+  const config = whatsappConfiguration.parse(credential.configuration);
+  const accessToken = decryptSecret(credential, message.organizationId);
+
+  const templateName = config.templateName;
+  const language = config.templateLanguage;
+  const phoneNumberId = config.phoneNumberId;
+  const businessAccountId = config.businessAccountId;
+  const apiVersion = config.apiVersion;
+
+  const lead = message.lead ?? null;
+
+  let templateParams: string[];
+  if (lead) {
+    const name = lead.name ?? 'there';
+    const industry = lead.industry ?? 'your business';
+    const offer = lead.recommendedOffer ?? 'our solution';
+    templateParams = [name, industry, offer];
+  } else {
+    templateParams = splitBodyForTemplate(message.body, 3);
+  }
+
+  const payload = {
+    messaging_product: 'whatsapp',
+    to: message.recipient,
+    type: 'template',
+    template: {
+      name: templateName,
+      language: { code: language },
+      components: [
+        {
+          type: 'body',
+          parameters: templateParams.map((text) => ({ text })),
+        },
+      ],
+    },
+  };
+
+  const url = `https://graph.facebook.com/${apiVersion}/${phoneNumberId}/messages`;
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: {
+      authorization: `Bearer ${accessToken}`,
+      'content-type': 'application/json',
+      'idempotency-key': message.id,
+    },
+    body: JSON.stringify(payload),
+    signal: AbortSignal.timeout(30_000),
+  });
+
+  if (!response.ok) {
+    const errorBody = await checkedJson(response);
+    const errorCode = errorBody.error?.code as number | undefined;
+    const errorType = errorBody.error?.error_user_msg as string | undefined;
+
+    if (errorCode === 341 || errorType?.includes('MESSAGE_TEMPLATE')) {
+      throw new AppError(
+        409,
+        `WhatsApp template "${templateName}" not approved or not synced. Create, submit, and sync the template in Meta Business Console before sending.`,
+        'WHATSAPP_TEMPLATE_NOT_APPROVED',
+      );
+    }
+
+    throw new AppError(502, `WhatsApp delivery failed: ${JSON.stringify(errorBody)}`, 'CHANNEL_PROVIDER_ERROR');
+  }
+
+  const result = await checkedJson(response);
+  const messages = (result as Record<string, unknown>).messages as Array<{ id: string }> | undefined;
+  return messages?.[0]?.id ?? message.id;
 }
 
-export async function deliverOutreach(message: OutreachMessage): Promise<string> {
+export async function deliverOutreach(message: OutreachMessage & { lead?: { name: string; industry: string; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
   return message.channel === 'EMAIL' ? sendEmail(message) : sendWhatsApp(message);
 }

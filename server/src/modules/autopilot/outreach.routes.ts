@@ -51,12 +51,12 @@ router.post('/leads/:leadId/draft', requireRole('OWNER', 'ADMIN', 'MANAGER', 'ME
   });
   if (!lead) throw new AppError(404, 'Lead not found', 'NOT_FOUND');
 
-  const draft = await completeWithOrganizationModel({
-    organizationId,
-    system: 'You write concise, respectful B2B outreach grounded only in supplied evidence. Never invent facts. Return JSON with subject and body. Include a clear opt-out sentence for email.',
-    prompt: JSON.stringify({ channel, business: lead.name, industry: lead.industry, location: lead.location, summary: lead.aiSummary, recommendedOffer: lead.recommendedOffer, signals: lead.signals }),
-    responseSchema: draftSchema,
-  }) as z.infer<typeof draftSchema>;
+    const draft = await completeWithOrganizationModel({
+      organizationId,
+      system: 'You write advanced B2B sales outreach grounded only in supplied evidence. Never invent facts. Return JSON with subject and body. For WhatsApp, generate a body that uses the EXACT template structure below — do NOT change the structure, only fill in the three values. Template: "Hi {{1}} 👋 We came across {{2}} and noticed there may be an opportunity to improve how you handle operations. We have a solution designed to help businesses like yours {{3}} — while reducing manual work and making day-to-day operations easier. Would you like me to show you how it could work? Reply YES and I\'ll send you a quick overview or arrange an onsite demonstration with an engineer. Reply STOP to opt out." {param1} = lead/business first name, {param2} = industry category (e.g., "logistics", "hospitality"), {param3} = recommended product or offer from the data. Tone: confident, consultative, warm, not pushy. Always return JSON with subject and body keys.',
+      prompt: JSON.stringify({ channel, business: lead.name, industry: lead.industry, location: lead.location, summary: lead.aiSummary, recommendedOffer: lead.recommendedOffer, signals: lead.signals }),
+      responseSchema: draftSchema,
+    }) as z.infer<typeof draftSchema>;
 
   const message = await prisma.outreachMessage.create({
     data: {
