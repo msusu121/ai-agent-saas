@@ -128,6 +128,27 @@ socialRouter.post('/posts/:id/schedule', edit, asyncHandler(async (req, res) => 
   await prisma.auditLog.create({ data: { organizationId, userId: req.auth!.userId, action: 'UPDATE', resourceType: 'SocialPost', resourceId: post.id, } });
   res.json({ status: 'SCHEDULED' });
 }));
+socialRouter.post('/posts/:id/schedule-both', edit, asyncHandler(async (req, res) => {
+  const { scheduledAt, otherAccountId } = z.object({ scheduledAt: z.coerce.date(), otherAccountId: z.string().min(1) }).parse(req.body);
+  if (scheduledAt.getTime() < Date.now() - 60000 || scheduledAt.getTime() > Date.now() + 90 * 86400000) throw new AppError(400, 'Choose a time within the next 90 days');
+  const organizationId = req.auth!.organizationId!;
+  const posts = await prisma.$transaction(async tx => {
+    const post = await tx.socialPost.findFirst({ where: { id: String(req.params.id), organizationId }, include: { account: true } });
+    const other = await tx.socialAccount.findFirst({ where: { id: otherAccountId, organizationId, active: true } });
+    if (!post || !post.account.active || !other) throw new AppError(404, 'Both connected accounts must be available');
+    if (new Set([post.account.platform, other.platform]).size !== 2 || ![post.account.platform, other.platform].every(p => ['FACEBOOK', 'INSTAGRAM'].includes(p))) throw new AppError(400, 'Choose one Facebook Page and one Instagram account');
+    try { for (const platform of [post.account.platform, other.platform]) validatePost(platform, post.caption, post.imageUrl); } catch (error) { throw new AppError(400, (error as Error).message); }
+    const approval = { status: 'SCHEDULED', scheduledAt, approvedAt: new Date(), approvedBy: req.auth!.userId, failureReason: null };
+    // Claim the source draft inside the same transaction as the second delivery.
+    // Repeated clicks cannot clone an already scheduled or published source.
+    const changed = await tx.socialPost.updateMany({ where: { id: post.id, organizationId, updatedAt: post.updatedAt, status: 'DRAFT' }, data: approval });
+    if (!changed.count) throw new AppError(409, 'This draft was already submitted or changed. Refresh Results before trying again.');
+    const copy = await tx.socialPost.create({ data: { organizationId, productId: post.productId, accountId: other.id, caption: post.caption, imageUrl: post.imageUrl, creativeBrief: post.creativeBrief, rationale: post.rationale, ...approval } });
+    await tx.auditLog.create({ data: { organizationId, userId: req.auth!.userId, action: 'UPDATE', resourceType: 'SocialPost', resourceId: post.id } });
+    return [{ id: post.id, platform: post.account.platform }, { id: copy.id, platform: other.platform }];
+  });
+  res.json({ status: 'SCHEDULED', posts });
+}));
 socialRouter.post('/posts/:id/cancel', edit, asyncHandler(async (req, res) => {
   const changed = await prisma.socialPost.updateMany({ where: { id: String(req.params.id), organizationId: req.auth!.organizationId!, status: { in: ['DRAFT', 'SCHEDULED', 'FAILED'] } }, data: { status: 'CANCELLED' } });
   if (!changed.count) throw new AppError(409, 'Post cannot be cancelled after publishing has started');
