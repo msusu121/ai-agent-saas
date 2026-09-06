@@ -10,6 +10,8 @@ import { leadRouter } from '../modules/leads/lead.routes.js';
 import { organizationRouter } from '../modules/organizations/organization.routes.js';
 import { storageRouter } from '../modules/storage/storage.routes.js';
 import { sequenceRouter } from '../modules/sequences/sequence.routes.js';
+import { socialRouter } from '../modules/social/social.routes.js';
+import { socialOAuthRouter } from '../modules/social/social-oauth.js';
 
 export const apiRouter = Router();
 apiRouter.use('/auth', authRouter);
@@ -21,3 +23,5 @@ apiRouter.use('/autopilot', requireAuth, autopilotRouter);
 apiRouter.use('/outreach', requireAuth, outreachRouter);
 apiRouter.use('/storage', requireAuth, storageRouter);
 apiRouter.use('/sequences', requireAuth, sequenceRouter);
+apiRouter.use('/social/oauth', socialOAuthRouter);
+apiRouter.use('/social', requireAuth, socialRouter);

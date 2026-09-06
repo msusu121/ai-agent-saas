@@ -3,6 +3,7 @@ import { prisma } from '../lib/prisma.js';
 import './campaign.worker.js';
 import './outreach.worker.js';
 import './autopilot.worker.js';
+import './social.worker.js';
 
 const configs = await prisma.autopilotConfig.findMany({ where: { enabled: true }, select: { organizationId: true } });
 for (const config of configs) {

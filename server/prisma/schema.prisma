@@ -129,6 +129,73 @@ model Organization {
   files          FileObject[]
   auditLogs      AuditLog[]
   refreshSessions RefreshSession[]
+  socialProducts SocialProduct[]
+  socialAccounts SocialAccount[]
+  socialPosts SocialPost[]
+}
+
+model SocialProduct {
+  id String @id @default(cuid())
+  organizationId String
+  name String
+  description String
+  audience String
+  claims String
+  voice String
+  website String
+  callToAction String
+  growthPlan Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  posts SocialPost[]
+  @@index([organizationId])
+}
+
+model SocialAccount {
+  id String @id @default(cuid())
+  organizationId String
+  platform String
+  externalId String
+  name String
+  ciphertext String
+  iv String
+  authTag String
+  keyVersion Int @default(1)
+  active Boolean @default(true)
+  checkedAt DateTime @default(now())
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  posts SocialPost[]
+  @@unique([organizationId, platform, externalId])
+}
+
+model SocialPost {
+  id String @id @default(cuid())
+  organizationId String
+  productId String
+  accountId String
+  caption String
+  imageUrl String?
+  creativeBrief String @default("")
+  rationale String @default("")
+  evidence Json?
+  status String @default("DRAFT")
+  scheduledAt DateTime?
+  approvedBy String?
+  approvedAt DateTime?
+  publishedAt DateTime?
+  providerId String?
+  permalink String?
+  containerId String?
+  failureReason String?
+  metrics Json?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  product SocialProduct @relation(fields: [productId], references: [id])
+  account SocialAccount @relation(fields: [accountId], references: [id])
+  @@index([organizationId, createdAt])
+  @@index([status, scheduledAt])
 }
 
 model Membership {

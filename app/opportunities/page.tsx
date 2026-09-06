@@ -22,6 +22,7 @@ import { Input } from '@/components/ui/input';
 import { apiRequest } from '@/lib/api';
 
 type Lead = {
+  campaignId: string | null;
   id: string;
   name: string;
   industry: string | null;
@@ -72,6 +73,7 @@ export default function OpportunitiesPage() {
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
+  const [qualifying, setQualifying] = useState(false);
   const load = useCallback(async () => {
     try {
       const [l, c] = await Promise.all([
@@ -95,6 +97,27 @@ export default function OpportunitiesPage() {
   useEffect(() => {
     void load();
   }, [load]);
+
+  async function qualifySelected() {
+    if (!selected?.campaignId) {
+      setError('This opportunity is not linked to a campaign and cannot be qualified here.');
+      return;
+    }
+    setQualifying(true);
+    setError('');
+    try {
+      await apiRequest(`/campaigns/${selected.campaignId}/qualify`, {
+        method: 'POST',
+        body: JSON.stringify({}),
+      });
+      setNotice(`AI qualification queued for ${selected.name}`);
+      await load();
+    } catch (caught) {
+      setError(caught instanceof Error ? caught.message : 'Unable to start AI qualification');
+    } finally {
+      setQualifying(false);
+    }
+  }
   const visibleLeads = useMemo(
     () => (highFitOnly ? leads.filter((l) => l.score >= 80) : leads),
     [highFitOnly, leads],
@@ -346,6 +369,12 @@ export default function OpportunitiesPage() {
                     selected.signals[0]?.value ??
                     'AI analysis is pending for this opportunity.'}
                 </p>
+                {!selected.aiSummary ? (
+                  <Button type="button" onClick={() => void qualifySelected()} disabled={qualifying || !selected.campaignId} size="sm" className="mt-3 w-full">
+                    {qualifying ? <LoaderCircle className="size-4 animate-spin" /> : <Sparkles className="size-4" />}
+                    {qualifying ? 'Qualification queued…' : 'Start AI qualification'}
+                  </Button>
+                ) : null}
               </div>
               <div className="mt-5">
                 <p className="text-[11px] font-bold uppercase tracking-wider text-[#918da1]">

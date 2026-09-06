@@ -91,6 +91,13 @@ const locations = ['Coast, Kenya', 'Mombasa, Kenya', 'Nairobi, Kenya', 'Kisumu, 
 const industries = ['Private schools', 'Hospitality', 'Healthcare', 'Retail', 'Logistics', 'Real estate', 'Restaurants & catering', 'Professional services'];
 const businessSizes = ['Any size', '1–10 employees', '11–50 employees', '51–200 employees', '201+ employees'];
 
+function timeGreeting(hour: number) {
+  if (hour < 5) return 'Good night';
+  if (hour < 12) return 'Good morning';
+  if (hour < 18) return 'Good afternoon';
+  return 'Good evening';
+}
+
 function explainCampaignFailure(reason: string) {
   if (reason.includes('(402)'))
     return 'This AI model requires credits or is not available for the connected account. Choose another model in Settings or add provider credits, then retry.';
@@ -120,6 +127,15 @@ export default function Dashboard() {
   const [businessSize, setBusinessSize] = useState('Any size');
   const [target, setTarget] = useState(5);
   const [discoverySources, setDiscoverySources] = useState<string[]>(defaultSources);
+  const [greeting, setGreeting] = useState('Hello');
+  const [userName, setUserName] = useState('there');
+  useEffect(() => {
+    const updateGreeting = () => setGreeting(timeGreeting(new Date().getHours()));
+    updateGreeting();
+    const timer = window.setInterval(updateGreeting, 60_000);
+    setUserName(sessionStorage.getItem('salesAgentUserName') ?? 'there');
+    return () => window.clearInterval(timer);
+  }, []);
   async function load() {
     try {
       const [l, c, m] = await Promise.all([
@@ -252,7 +268,7 @@ export default function Dashboard() {
     <SectionShell
       active="/"
       eyebrow="AI business development agent"
-      title="Good morning, Hasan 👋"
+      title={`${greeting}, ${userName} 👋`}
       description="Your AI agent finds businesses that need what you sell and helps you close more deals."
     >
       {notice ? (

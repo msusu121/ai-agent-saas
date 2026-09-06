@@ -26,6 +26,7 @@ import { Button } from '@/components/ui/button';
 import { apiRequest } from '@/lib/api';
 
 const routes = [
+  { label: 'Social Media', icon: Sparkles, href: '/social' },
   { label: 'Home', icon: LayoutDashboard, href: '/' },
   { label: 'Scout Agent', icon: Compass, href: '/opportunities' },
   {

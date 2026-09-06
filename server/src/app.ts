@@ -22,7 +22,7 @@ app.use((request, response, next) => {
   response.setHeader('x-request-id', request.requestId);
   next();
 });
-app.use(pinoHttp({ redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'] }));
+app.use(pinoHttp({ redact: ['req.headers.authorization', 'req.headers.cookie', 'res.headers["set-cookie"]'], serializers: { req(req) { return req.url?.includes('/social/oauth/callback') ? { ...req, url: '/api/v1/social/oauth/callback', query: '[Redacted]' } : req; } } }));
 app.use(helmet({ crossOriginResourcePolicy: { policy: 'same-site' } }));
 app.use(cors({ origin: env.WEB_ORIGIN, credentials: true, methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE', 'OPTIONS'] }));
 app.use(express.json({ limit: '1mb' }));
