@@ -30,7 +30,16 @@ export const outreachWorker = new Worker(
 
     await prisma.outreachMessage.update({ where: { id: message.id }, data: { status: 'SENDING' } });
 
-    const providerId = await deliverOutreach(message);
+    const deliveryMessage = {
+      ...message,
+      lead: message.lead ? {
+        name: message.lead.name,
+        industry: message.lead.industry,
+        estimatedValue: message.lead.estimatedValue === null ? null : Number(message.lead.estimatedValue),
+        recommendedOffer: message.lead.recommendedOffer,
+      } : null,
+    };
+    const providerId = await deliverOutreach(deliveryMessage);
     await prisma.outreachMessage.update({
       where: { id: message.id },
       data: { status: 'SENT', sentAt: new Date(), providerId },

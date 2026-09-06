@@ -87,7 +87,9 @@ function splitBodyForTemplate(body: string, maxParams: number = 3): string[] {
     const regex = new RegExp(placeholderRegex.source, placeholderRegex.flags);
 
     while ((match = regex.exec(body)) !== null) {
-      const index = parseInt(match[1], 10) - 1;
+      const parameter = match[1];
+      if (!parameter) continue;
+      const index = parseInt(parameter, 10) - 1;
       const beforeText = body.slice(lastIndex, match.index).trim();
       if (parts.length <= index) {
         parts.length = index + 1;
@@ -113,7 +115,7 @@ function splitBodyForTemplate(body: string, maxParams: number = 3): string[] {
   return chunks.slice(0, maxParams);
 }
 
-async function sendWhatsApp(message: OutreachMessage & { lead?: { name: string; industry: string; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
+async function sendWhatsApp(message: OutreachMessage & { lead?: { name: string; industry: string | null; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
   const credential = await prisma.providerCredential.findFirst({
     where: { organizationId: message.organizationId, isActive: true, provider: 'WHATSAPP' },
     orderBy: { updatedAt: 'desc' },
@@ -170,8 +172,11 @@ async function sendWhatsApp(message: OutreachMessage & { lead?: { name: string; 
 
   if (!response.ok) {
     const errorBody = await checkedJson(response);
-    const errorCode = errorBody.error?.code as number | undefined;
-    const errorType = errorBody.error?.error_user_msg as string | undefined;
+    const providerError = errorBody.error;
+    const errorCode = providerError && typeof providerError === 'object' && 'code' in providerError
+      ? (providerError.code as number | undefined) : undefined;
+    const errorType = providerError && typeof providerError === 'object' && 'error_user_msg' in providerError
+      ? (providerError.error_user_msg as string | undefined) : undefined;
 
     if (errorCode === 341 || errorType?.includes('MESSAGE_TEMPLATE')) {
       throw new AppError(
@@ -189,6 +194,6 @@ async function sendWhatsApp(message: OutreachMessage & { lead?: { name: string; 
   return messages?.[0]?.id ?? message.id;
 }
 
-export async function deliverOutreach(message: OutreachMessage & { lead?: { name: string; industry: string; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
+export async function deliverOutreach(message: OutreachMessage & { lead?: { name: string; industry: string | null; estimatedValue: number | null; recommendedOffer: string | null } | null }): Promise<string> {
   return message.channel === 'EMAIL' ? sendEmail(message) : sendWhatsApp(message);
 }
