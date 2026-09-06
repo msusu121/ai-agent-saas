@@ -20,6 +20,25 @@ export async function apiRequest<T>(
   path: string,
   init: RequestInit = {},
 ): Promise<T> {
+  // Recover the selected tenant when a stale session has a token but lost the
+  // organization id. Without this, every tenant-scoped request returns 400.
+  if (!sessionStorage.getItem('salesAgentOrganizationId') && path !== '/organizations') {
+    const token = sessionStorage.getItem('salesAgentAccessToken');
+    if (token) {
+      const organizationsResponse = await fetch(apiUrl('/organizations'), {
+        credentials: 'include',
+        headers: { authorization: `Bearer ${token}` },
+      });
+      if (organizationsResponse.ok) {
+        const body = (await organizationsResponse.json()) as { organizations?: Array<{ id: string; name: string }> };
+        const organization = body.organizations?.[0];
+        if (organization) {
+          sessionStorage.setItem('salesAgentOrganizationId', organization.id);
+          sessionStorage.setItem('salesAgentOrganizationName', organization.name);
+        }
+      }
+    }
+  }
   let response = await fetch(apiUrl(path), {
     ...init,
     credentials: 'include',

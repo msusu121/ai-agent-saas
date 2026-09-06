@@ -36,6 +36,22 @@ router.put('/', requireRole('OWNER', 'ADMIN', 'MANAGER'), asyncHandler(async (re
     update: input,
     create: { organizationId, ...input },
   });
+  if (input.approvalMode === 'NONE') {
+    const pending = await prisma.outreachMessage.findMany({
+      where: { organizationId, status: 'NEEDS_REVIEW' },
+      select: { id: true },
+    });
+    for (const message of pending) {
+      await prisma.outreachMessage.update({
+        where: { id: message.id },
+        data: { status: 'SCHEDULED', scheduledFor: new Date() },
+      });
+      await autopilotQueue.add('deliver', { messageId: message.id, organizationId }, {
+        delay: 0,
+        jobId: `autopilot-${message.id}`,
+      });
+    }
+  }
   await prisma.auditLog.create({
     data: {
       organizationId,
