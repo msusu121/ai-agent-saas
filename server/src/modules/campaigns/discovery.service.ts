@@ -1,345 +1,494 @@
 import type { Campaign, Prisma, ProviderCredential } from '@prisma/client';
 
 import { decryptSecret } from '../../lib/credentials-crypto.js';
+
 import { AppError } from '../../lib/errors.js';
+
 import { prisma } from '../../lib/prisma.js';
 
-type Candidate = {
+import { canonicalBusinessUrl, interleave, webProviders } from './discovery-policy.js';
+
+export type Candidate = {
+
   name: string;
+
   website: string;
+
   location: string;
+
   industry: string;
+
   source: string;
-  kind: 'PLACE' | 'WEB';
-  quality: number;
+
   rawSignals: Record<string, unknown>;
+
 };
+
 type GooglePlace = {
+
   id: string;
+
   displayName?: { text?: string };
+
   formattedAddress?: string;
+
   websiteUri?: string;
+
   googleMapsUri?: string;
+
   primaryTypeDisplayName?: { text?: string };
-  businessStatus?: string;
-  nationalPhoneNumber?: string;
-  rating?: number;
-  userRatingCount?: number;
-  types?: string[];
+
 };
-
-const providerPriority: Record<string, number> = {
-  GOOGLE_PLACES: 0,
-  GOOGLE_CUSTOM_SEARCH: 1,
-  SERPER: 2,
-  BRAVE_SEARCH: 3,
-};
-
-const blockedWebHosts = [
-  'google.com', 'youtube.com', 'wikipedia.org', 'linkedin.com',
-  'facebook.com', 'instagram.com', 'x.com', 'twitter.com', 'tiktok.com',
-  'pinterest.com', 'researchgate.net', 'academia.edu',
-];
-const nonBusinessTitle = /\b(article|blog|case study|directory|guide|how to|list of|news|pdf|report|research|study|top \d+|best \d+|behind|a look at|wikipedia)\b/i;
-const nonBusinessPath = /\/(blog|blogs|news|article|articles|insights|resources|publications|research|reports?|search|category|tag)\b/i;
-const documentPath = /\.(?:pdf|docx?|xlsx?|pptx?)(?:$|[?#])/i;
-
-function hostnameMatches(hostname: string, blocked: string) {
-  return hostname === blocked || hostname.endsWith(`.${blocked}`);
-}
-
-function cleanResultName(title: string) {
-  return title.replace(/\s+[|–—]\s+.*$/, '').replace(/\s+-\s+[^-]+$/, '').trim();
-}
-
-function webCandidate(input: {
-  title?: string; link?: string; snippet?: string; location: string;
-  industry: string; source: string;
-}): Candidate | null {
-  if (!input.title || !input.link) return null;
-  let url: URL;
-  try { url = new URL(input.link); } catch { return null; }
-  if (!['http:', 'https:'].includes(url.protocol)) return null;
-  const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
-  if (blockedWebHosts.some((blocked) => hostnameMatches(hostname, blocked)) ||
-      documentPath.test(url.pathname) || nonBusinessPath.test(url.pathname) ||
-      nonBusinessTitle.test(input.title)) return null;
-  const name = cleanResultName(input.title);
-  if (name.length < 3 || name.length > 100 || nonBusinessTitle.test(name)) return null;
-  return {
-    name,
-    website: url.origin,
-    location: input.location,
-    industry: input.industry,
-    source: input.source,
-    kind: 'WEB',
-    quality: url.pathname === '/' ? 45 : 35,
-    rawSignals: {
-      snippet: input.snippet ?? '',
-      discoveryResultUrl: url.toString(),
-      discoveryHost: hostname,
-    },
-  };
-}
 
 async function checkedJson(response: Response, provider: string) {
+
   if (!response.ok)
+
     throw new AppError(
+
       502,
+
       `${provider} discovery failed (${response.status})`,
+
       'DISCOVERY_PROVIDER_ERROR',
+
     );
+
   return response.json() as Promise<Record<string, unknown>>;
+
 }
 
-async function searchProvider(
+export async function searchProvider(
+
   query: string,
+
   location: string,
+
   industry: string,
+
   credential: ProviderCredential,
+
   organizationId: string,
+
 ): Promise<Candidate[]> {
+
   const secret = decryptSecret(credential, organizationId);
+
   if (credential.provider === 'GOOGLE_PLACES') {
+
     const payload = (await checkedJson(
+
       await fetch('https://places.googleapis.com/v1/places:searchText', {
+
         method: 'POST',
+
         headers: {
+
           'content-type': 'application/json',
+
           'x-goog-api-key': secret,
+
           'x-goog-fieldmask':
-            'places.id,places.displayName,places.formattedAddress,places.websiteUri,places.googleMapsUri,places.primaryTypeDisplayName,places.businessStatus,places.nationalPhoneNumber,places.rating,places.userRatingCount,places.types',
+
+            'places.id,places.displayName,places.formattedAddress,places.websiteUri,places.googleMapsUri,places.primaryTypeDisplayName',
+
         },
+
         body: JSON.stringify({
+
           textQuery: query,
+
           pageSize: 20,
+
           languageCode: 'en',
+
         }),
+
         signal: AbortSignal.timeout(30_000),
+
       }),
+
       'Google Places',
+
     )) as { places?: GooglePlace[] };
+
     return (payload.places ?? []).flatMap((place) => {
+
       const name = place.displayName?.text?.trim();
-      if (!name || place.businessStatus === 'CLOSED_PERMANENTLY') return [];
+
+      if (!name) return [];
+
       return [
+
         {
+
           name,
+
           website:
+
             place.websiteUri ??
+
             place.googleMapsUri ??
+
             `https://www.google.com/maps/search/?api=1&query_place_id=${encodeURIComponent(place.id)}`,
+
           location: place.formattedAddress ?? location,
+
           industry: place.primaryTypeDisplayName?.text ?? industry,
+
           source: 'Google Places API',
-          kind: 'PLACE',
-          quality: 100 + (place.websiteUri ? 15 : 0) +
-            (place.nationalPhoneNumber ? 10 : 0) +
-            (place.userRatingCount ? Math.min(10, Math.log10(place.userRatingCount + 1) * 3) : 0),
-          rawSignals: {
-            googlePlaceId: place.id,
-            address: place.formattedAddress ?? location,
-            businessStatus: place.businessStatus ?? 'OPERATIONAL',
-            phone: place.nationalPhoneNumber ?? null,
-            rating: place.rating ?? null,
-            userRatingCount: place.userRatingCount ?? 0,
-            placeTypes: place.types ?? [],
-            mapsUrl: place.googleMapsUri ?? null,
-          },
+
+          rawSignals: { googlePlaceId: place.id },
+
         },
+
       ];
+
     });
+
   }
+
   if (credential.provider === 'SERPER') {
+
     const payload = (await checkedJson(
+
       await fetch('https://google.serper.dev/search', {
+
         method: 'POST',
+
         headers: { 'content-type': 'application/json', 'x-api-key': secret },
+
         body: JSON.stringify({ q: query, num: 20 }),
+
         signal: AbortSignal.timeout(30_000),
+
       }),
+
       'Serper',
+
     )) as {
+
       organic?: Array<{ title?: string; link?: string; snippet?: string }>;
+
     };
-    return (payload.organic ?? []).flatMap((item) => {
-      const candidate = webCandidate({
-        ...(item.title !== undefined && { title: item.title }),
-        ...(item.link !== undefined && { link: item.link }),
-        ...(item.snippet !== undefined && { snippet: item.snippet }),
-        location, industry, source: 'Google Search via Serper'
-      });
-      return candidate ? [candidate] : [];
-    });
+
+    return (payload.organic ?? []).flatMap((item) =>
+
+      item.title && item.link
+
+        ? [
+
+            {
+
+              name: item.title.replace(/\s*[|–-].*$/, '').trim(),
+
+              website: item.link,
+
+              location,
+
+              industry,
+
+              source: 'Google Search via Serper',
+
+              rawSignals: { snippet: item.snippet ?? '' },
+
+            },
+
+          ]
+
+        : [],
+
+    );
+
   }
+
   if (credential.provider === 'BRAVE_SEARCH') {
+
     const url = new URL('https://api.search.brave.com/res/v1/web/search');
+
     url.searchParams.set('q', query);
+
     url.searchParams.set('count', '20');
+
     const payload = (await checkedJson(
+
       await fetch(url, {
+
         headers: { accept: 'application/json', 'x-subscription-token': secret },
+
         signal: AbortSignal.timeout(30_000),
+
       }),
+
       'Brave Search',
+
     )) as {
+
       web?: {
+
         results?: Array<{ title?: string; url?: string; description?: string }>;
+
       };
+
     };
-    return (payload.web?.results ?? []).flatMap((item) => {
-      const candidate = webCandidate({
-        ...(item.title !== undefined && { title: item.title }),
-        ...(item.url !== undefined && { link: item.url }),
-        ...(item.description !== undefined && { snippet: item.description }),
-        location, industry, source: 'Brave Search'
-      });
-      return candidate ? [candidate] : [];
-    });
+
+    return (payload.web?.results ?? []).flatMap((item) =>
+
+      item.title && item.url
+
+        ? [
+
+            {
+
+              name: item.title.replace(/\s*[|–-].*$/, '').trim(),
+
+              website: item.url,
+
+              location,
+
+              industry,
+
+              source: 'Brave Search',
+
+              rawSignals: { snippet: item.description ?? '' },
+
+            },
+
+          ]
+
+        : [],
+
+    );
+
   }
+
   if (credential.provider === 'GOOGLE_CUSTOM_SEARCH') {
+
     const configuration = (credential.configuration ?? {}) as Record<
+
       string,
+
       unknown
+
     >;
+
     const searchEngineId = String(configuration.searchEngineId ?? '');
+
     if (!searchEngineId)
+
       throw new AppError(
+
         422,
+
         'Google Custom Search requires a Search Engine ID in Settings',
+
         'DISCOVERY_PROVIDER_CONFIGURATION',
+
       );
+
     const url = new URL('https://customsearch.googleapis.com/customsearch/v1');
+
     url.searchParams.set('key', secret);
+
     url.searchParams.set('cx', searchEngineId);
+
     url.searchParams.set('q', query);
+
     url.searchParams.set('num', '10');
+
     const payload = (await checkedJson(
+
       await fetch(url, { signal: AbortSignal.timeout(30_000) }),
+
       'Google Custom Search',
+
     )) as {
+
       items?: Array<{ title?: string; link?: string; snippet?: string }>;
+
     };
-    return (payload.items ?? []).flatMap((item) => {
-      const candidate = webCandidate({
-        ...(item.title !== undefined && { title: item.title }),
-        ...(item.link !== undefined && { link: item.link }),
-        ...(item.snippet !== undefined && { snippet: item.snippet }),
-        location, industry, source: 'Google Custom Search'
-      });
-      return candidate ? [candidate] : [];
-    });
+
+    return (payload.items ?? []).flatMap((item) =>
+
+      item.title && item.link
+
+        ? [
+
+            {
+
+              name: item.title.replace(/\s*[|–-].*$/, '').trim(),
+
+              website: item.link,
+
+              location,
+
+              industry,
+
+              source: 'Google Custom Search',
+
+              rawSignals: { snippet: item.snippet ?? '' },
+
+            },
+
+          ]
+
+        : [],
+
+    );
+
   }
+
   return [];
+
 }
 
-export async function discoverCampaignCandidates(campaign: Campaign) {
-  const credentials = await prisma.providerCredential.findMany({
-    where: {
-      organizationId: campaign.organizationId,
-      provider: {
-        in: ['GOOGLE_PLACES', 'GOOGLE_CUSTOM_SEARCH', 'SERPER', 'BRAVE_SEARCH'],
-      },
-      isActive: true,
-    },
+import { searchApify } from './apify-discovery.service.js';
+
+type SourceReport = { source: string; status: string; found: number; message?: string };
+
+export async function discoverCampaignCandidates(campaign: Campaign, db: Pick<typeof prisma, 'providerCredential' | 'lead' | 'campaign' | 'apifyDiscoveryRun'> = prisma) {
+
+  const credentials = await db.providerCredential.findMany({
+
+    where: { organizationId: campaign.organizationId, provider: { in: ['GOOGLE_PLACES', 'GOOGLE_CUSTOM_SEARCH', 'SERPER', 'BRAVE_SEARCH', 'APIFY'] }, isActive: true },
+
     orderBy: { updatedAt: 'desc' },
+
   });
-  if (!credentials.length)
-    throw new AppError(
-      409,
-      'Connect a search source in Settings before running a campaign',
-      'DISCOVERY_PROVIDER_REQUIRED',
-    );
-  credentials.sort(
-    (left, right) =>
-      (providerPriority[left.provider] ?? 99) -
-      (providerPriority[right.provider] ?? 99),
-  );
 
-  const candidates: Candidate[] = [];
-  const providerErrors: Error[] = [];
-  let successfulProviderCalls = 0;
-  for (const industry of campaign.industries) {
-    for (const location of campaign.locations) {
-      for (const credential of credentials) {
-        try {
-          candidates.push(...await searchProvider(
-            `${industry} in ${location}`,
-            location,
-            industry,
-            credential,
-            campaign.organizationId,
-          ));
-          successfulProviderCalls += 1;
-        } catch (error) {
-          providerErrors.push(error instanceof Error ? error : new Error(String(error)));
-        }
-      }
-    }
-  }
-  if (!successfulProviderCalls && providerErrors.length) throw providerErrors[0];
+  const reports: SourceReport[] = [];
 
-  const unique = new Map<string, Candidate>();
-  for (const candidate of candidates) {
-    let normalized: string;
-    let key: string;
-    try {
-      const url = new URL(candidate.website);
-      url.hash = '';
-      if (candidate.kind === 'WEB') {
-        url.pathname = '/';
-        url.search = '';
+  const groups: Candidate[][] = [];
+
+  for (const source of campaign.discoverySources) {
+
+    if (source === 'INSTAGRAM' || source === 'FACEBOOK') {
+      const credential = credentials.find(item => item.provider === 'APIFY');
+      if (!credential) { reports.push({ source, status: 'unavailable', found: 0, message: 'Connect Apify in Settings for Instagram and Facebook.' }); continue; }
+      try {
+        const candidates = await searchApify(campaign, source, credential, db);
+        groups.push(candidates);
+        reports.push({ source, status: 'complete', found: candidates.length });
+      } catch (error) {
+        reports.push({ source, status: 'failed', found: 0, message: error instanceof AppError ? error.message : 'Apify discovery failed. Check your connection and run in Apify Console.' });
       }
-      normalized = url.toString();
-      const placeId = candidate.rawSignals.googlePlaceId;
-      const hostname = url.hostname.toLowerCase().replace(/^www\./, '');
-      key = typeof placeId === 'string' && placeId
-        ? `place:${placeId}`
-        : hostnameMatches(hostname, 'google.com')
-          ? `name:${candidate.name.toLowerCase()}:${candidate.location.toLowerCase()}`
-          : `host:${hostname}`;
-    } catch {
       continue;
     }
-    candidate.website = normalized;
-    const existing = unique.get(key);
-    if (!existing || candidate.quality > existing.quality) unique.set(key, candidate);
-  }
+    const eligible = credentials.filter(credential => source === 'GOOGLE_PLACES' ? credential.provider === 'GOOGLE_PLACES' : webProviders.some(provider => provider === credential.provider));
+    if (!eligible.length) {
 
-  const ordered = [...unique.values()].sort((left, right) => {
-    if (left.kind !== right.kind) return left.kind === 'PLACE' ? -1 : 1;
-    return right.quality - left.quality;
-  });
+      reports.push({ source, status: 'unavailable', found: 0, message: 'Connect the required search provider in Settings.' });
+
+      continue;
+
+    }
+
+    const candidates: Candidate[] = [];
+
+    let succeeded = 0;
+
+    let failures = 0;
+    let failureMessage = ''; 
+
+    for (const industry of campaign.industries) {
+
+      for (const location of campaign.locations) {
+
+        if (candidates.length >= campaign.targetCount) break;
+
+        const baseQuery = `${industry} businesses in ${location}`;
+
+        const query = baseQuery;
+        // Newest active key first; alternate keys/providers are bounded fallbacks.
+
+        for (const credential of eligible) {
+
+          try {
+
+              const results = await searchProvider(query, location, industry, credential, campaign.organizationId);
+              for (const candidate of results) {
+                const normalized = canonicalBusinessUrl(candidate.website);
+                if (!normalized) continue;
+                if (source === 'WEB' && /(^|\.)(instagram|facebook)\.com$/i.test(new URL(normalized).hostname)) continue;
+                candidates.push({ ...candidate, ...(source === 'WEB' ? { location: '', industry: '' } : {}),
+                  rawSignals: { ...candidate.rawSignals, discoverySource: source, evidenceUrl: candidate.website,
+                    requestedLocation: location, requestedIndustry: industry, observedAt: new Date().toISOString() } });
+              }
+              succeeded++;
+            break;
+
+          } catch (error) {
+
+            failures++;
+            failureMessage = error instanceof AppError ? error.message : 'A provider request failed. Check the connection in Settings.';
+
+          }
+
+        }
+
+      }
+
+    }
+
+    groups.push(candidates);
+
+    reports.push({ source, status: succeeded ? (failures ? 'partial' : 'complete') : 'failed', found: candidates.length,
+
+      ...(failures ? { message: failureMessage } : {}) });
+
+  }
 
   let discovered = 0;
-  for (const candidate of ordered.slice(0, campaign.targetCount)) {
-    await prisma.lead.upsert({
-      where: {
-        organizationId_website: {
-          organizationId: campaign.organizationId,
-          website: candidate.website,
-        },
-      },
-      update: {
-        campaignId: campaign.id,
-        name: candidate.name,
-        industry: candidate.industry,
-        location: candidate.location,
-        source: candidate.source,
-        rawSignals: candidate.rawSignals as Prisma.InputJsonValue,
-      },
-      create: {
-        organizationId: campaign.organizationId,
-        campaignId: campaign.id,
-        name: candidate.name,
-        website: candidate.website,
-        industry: candidate.industry,
-        location: candidate.location,
-        source: candidate.source,
-        rawSignals: candidate.rawSignals as Prisma.InputJsonValue,
-      },
+
+  const seen = new Set<string>();
+
+  // Interleave sources before applying the total cap; keep identities separate
+
+  // unless their canonical URLs agree. A shared name is not proof of identity.
+
+  for (const candidate of interleave(groups)) {
+
+    if (discovered >= campaign.targetCount) break;
+
+    const website = canonicalBusinessUrl(candidate.website);
+
+    if (!website || seen.has(website)) continue;
+
+    seen.add(website);
+
+    const lead = await db.lead.upsert({
+
+      where: { organizationId_website: { organizationId: campaign.organizationId, website } },
+
+      update: {}, // Preserve existing CRM ownership, suppression, status and evidence.
+
+      create: { organizationId: campaign.organizationId, campaignId: campaign.id, name: candidate.name,
+
+        website, location: candidate.location || null, industry: candidate.industry || null,
+
+        source: candidate.source, rawSignals: candidate.rawSignals as Prisma.InputJsonValue },
+
     });
-    discovered += 1;
+
+    if (lead.campaignId === campaign.id) discovered++;
+
   }
+
+  await db.campaign.update({ where: { id: campaign.id }, data: {
+
+    discoveryReport: { sources: reports, discovered, completedAt: new Date().toISOString(),
+
+      coverage: 'Bounded results: Apify searches public Instagram profiles and Facebook pages by campaign keywords (up to 250 results per platform, $2 run cap each). Location and business fit require evidence; discovery does not establish buying intent.' } as Prisma.InputJsonValue,
+
+  } });
+
+  if (!reports.some((report) => ['complete', 'partial'].includes(report.status))) {
+
+    throw new AppError(502, 'No selected discovery source succeeded. Check source status and credentials in Settings.', 'DISCOVERY_PROVIDER_ERROR');
+
+  }
+
   return discovered;
+
 }
+

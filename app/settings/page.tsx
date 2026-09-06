@@ -28,7 +28,6 @@ type Credential = {
   isActive: boolean;
   createdAt: string;
   updatedAt: string;
-  configuration: Record<string, unknown> | null;
 };
 type CurrentOrganization = {
   id: string;
@@ -49,7 +48,6 @@ type CurrentOrganization = {
   }>;
 };
 const aiProviders = ['OPENAI', 'ANTHROPIC', 'GOOGLE', 'GROQ', 'OPENROUTER'];
-const configurableModelProviders = ['OPENAI', 'OPENROUTER'];
 const sourceProviders = [
   'GOOGLE_PLACES',
   'GOOGLE_CUSTOM_SEARCH',
@@ -58,7 +56,7 @@ const sourceProviders = [
   'APOLLO',
   'HUNTER',
   'CLEARBIT',
-  'META',
+  'APIFY',
 ];
 const channelProviders = ['WHATSAPP', 'RESEND', 'SENDGRID'];
 const settingsNav: Array<{ icon: LucideIcon; label: string; id: string }> = [
@@ -87,12 +85,7 @@ export default function SettingsPage() {
   const [fromEmail, setFromEmail] = useState('');
   const [fromName, setFromName] = useState('Sales Agent');
   const [phoneNumberId, setPhoneNumberId] = useState('');
-  const [businessAccountId, setBusinessAccountId] = useState('');
-  const [graphApiVersion, setGraphApiVersion] = useState('v21.0');
   const [searchEngineId, setSearchEngineId] = useState('');
-  const [model, setModel] = useState('');
-  const [modelDrafts, setModelDrafts] = useState<Record<string, string>>({});
-  const [savingModelId, setSavingModelId] = useState<string | null>(null);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
   const [notice, setNotice] = useState('');
@@ -106,16 +99,6 @@ export default function SettingsPage() {
         ),
       ]);
       setCredentials(credentialBody.credentials);
-      setModelDrafts(
-        Object.fromEntries(
-          credentialBody.credentials.map((item) => [
-            item.id,
-            typeof item.configuration?.model === 'string'
-              ? item.configuration.model
-              : '',
-          ]),
-        ),
-      );
       setOrganization(organizationBody.organization);
       setError('');
     } catch (caught) {
@@ -139,12 +122,10 @@ export default function SettingsPage() {
       const configuration = ['RESEND', 'SENDGRID'].includes(provider)
         ? { fromEmail, fromName }
         : provider === 'WHATSAPP'
-          ? { phoneNumberId, businessAccountId, apiVersion: graphApiVersion }
+          ? { phoneNumberId, apiVersion: 'v21.0' }
           : provider === 'GOOGLE_CUSTOM_SEARCH'
             ? { searchEngineId }
-            : configurableModelProviders.includes(provider)
-              ? { model: model.trim() }
-              : undefined;
+            : undefined;
       await apiRequest('/credentials', {
         method: 'POST',
         body: JSON.stringify({
@@ -155,7 +136,6 @@ export default function SettingsPage() {
         }),
       });
       setSecret('');
-      setModel('');
       setShowForm(false);
       setNotice('Credential encrypted and saved');
       await load();
@@ -165,31 +145,6 @@ export default function SettingsPage() {
       );
     } finally {
       setSaving(false);
-    }
-  }
-  async function saveCredentialModel(item: Credential) {
-    const nextModel = modelDrafts[item.id]?.trim();
-    if (!nextModel) {
-      setError('Enter the exact provider model ID before saving.');
-      return;
-    }
-    setSavingModelId(item.id);
-    setError('');
-    try {
-      await apiRequest(`/credentials/${item.id}`, {
-        method: 'PATCH',
-        body: JSON.stringify({
-          configuration: { ...(item.configuration ?? {}), model: nextModel },
-        }),
-      });
-      setNotice(`${humanize(item.provider)} model saved as ${nextModel}`);
-      await load();
-    } catch (caught) {
-      setError(
-        caught instanceof Error ? caught.message : 'Unable to save AI model',
-      );
-    } finally {
-      setSavingModelId(null);
     }
   }
   async function toggleCredential(item: Credential) {
@@ -313,6 +268,17 @@ export default function SettingsPage() {
                   {showForm ? 'Close form' : 'Add credential'}
                 </Button>
               </div>
+              {active === 'sources' ? <div className="mt-5 space-y-3 rounded-2xl border border-violet-100 bg-violet-50/40 p-4">
+                <h3 className="text-sm font-bold">Google Places + Instagram + Facebook</h3>
+                <p className="text-xs leading-5 text-[#716c82]">Keep your Google Places key for map listings. Add one Apify API token to discover Instagram profiles and Facebook pages by industry and location. No usernames needed.</p>
+                <div className="grid gap-3 sm:grid-cols-3">
+                  {['Google Places', 'Instagram', 'Facebook'].map((name) => {
+                    const ready = credentials.some((item) => item.isActive && (name === 'Google Places' ? item.provider === 'GOOGLE_PLACES' : item.provider === 'APIFY'));
+                    return <div key={name} className="rounded-xl border bg-white p-3"><p className="text-xs font-bold">{name}</p><p className={`mt-1 text-xs ${ready ? 'text-emerald-700' : 'text-amber-700'}`}>{ready ? 'Search key configured' : 'Search key needed'}</p><Button type="button" variant="outline" size="sm" className="mt-2" onClick={() => { setProvider(name === 'Google Places' ? 'GOOGLE_PLACES' : 'APIFY'); setShowForm(true); }}>Configure</Button></div>;
+                  })}
+                </div>
+                 <p className="text-xs leading-5 text-[#716c82]">Get your API token from Apify Console &gt; Settings &gt; API &amp; Integrations. Choose APIFY below and paste it as the secret. Each platform run is capped at $2 and 250 results; coverage varies. Select Instagram and Facebook when creating a search.</p>
+              </div> : null}
               {showForm ? (
                 <form
                   onSubmit={createCredential}
@@ -323,10 +289,7 @@ export default function SettingsPage() {
                       aria-label="Credential provider"
                       className="h-10 rounded-xl border border-input bg-white px-3 text-sm"
                       value={provider}
-                      onChange={(e) => {
-                        setProvider(e.target.value);
-                        setModel('');
-                      }}
+                      onChange={(e) => setProvider(e.target.value)}
                     >
                       {availableProviders.map((item) => (
                         <option key={item} value={item}>
@@ -343,7 +306,6 @@ export default function SettingsPage() {
                     />
                     <Input
                       aria-label="Secret API key"
-                      autoComplete="new-password"
                       required
                       minLength={8}
                       type="password"
@@ -351,19 +313,6 @@ export default function SettingsPage() {
                       value={secret}
                       onChange={(e) => setSecret(e.target.value)}
                     />
-                    {configurableModelProviders.includes(provider) ? (
-                      <Input
-                        aria-label={`${humanize(provider)} model ID`}
-                        required
-                        placeholder={
-                          provider === 'OPENROUTER'
-                            ? 'Provider/model ID from OpenRouter'
-                            : 'OpenAI model ID'
-                        }
-                        value={model}
-                        onChange={(e) => setModel(e.target.value)}
-                      />
-                    ) : null}
                     {['RESEND', 'SENDGRID'].includes(provider) ? (
                       <>
                         <Input
@@ -384,36 +333,13 @@ export default function SettingsPage() {
                       </>
                     ) : null}
                     {provider === 'WHATSAPP' ? (
-                      <>
-                        <Input
-                          aria-label="WhatsApp Business Account ID"
-                          autoComplete="off"
-                          required
-                          placeholder="WhatsApp Business Account (WABA) ID"
-                          value={businessAccountId}
-                          onChange={(e) => setBusinessAccountId(e.target.value)}
-                        />
-                        <Input
-                          aria-label="WhatsApp phone number ID"
-                          autoComplete="off"
-                          required
-                          placeholder="Meta Phone Number ID"
-                          value={phoneNumberId}
-                          onChange={(e) => setPhoneNumberId(e.target.value)}
-                        />
-                        <Input
-                          aria-label="Meta Graph API version"
-                          autoComplete="off"
-                          required
-                          pattern="v[0-9]+\\.[0-9]+"
-                          placeholder="v21.0"
-                          value={graphApiVersion}
-                          onChange={(e) => setGraphApiVersion(e.target.value)}
-                        />
-                        <p className="sm:col-span-3 rounded-xl border border-violet-100 bg-white px-3 py-2 text-[10px] leading-5 text-[#666276]">
-                          Use a permanent Meta system-user access token as the secret. The WABA ID manages and submits message templates; the Phone Number ID sends messages. Cold or out-of-window outreach must use a Meta-approved template—not a free-form sequence prompt.
-                        </p>
-                      </>
+                      <Input
+                        aria-label="WhatsApp phone number ID"
+                        required
+                        placeholder="Meta phone number ID"
+                        value={phoneNumberId}
+                        onChange={(e) => setPhoneNumberId(e.target.value)}
+                      />
                     ) : null}
                     {provider === 'GOOGLE_CUSTOM_SEARCH' ? (
                       <Input
@@ -425,6 +351,7 @@ export default function SettingsPage() {
                       />
                     ) : null}
                   </div>
+                  {provider === 'APIFY' ? <p className="mt-3 text-xs text-amber-700">Use your Apify API token for both platforms. Paid actor runs start when you run an opportunity search.</p> : null}
                   <div className="mt-3 flex justify-end gap-2">
                     <Button
                       type="button"
@@ -465,7 +392,7 @@ export default function SettingsPage() {
                             {item.isActive ? (
                               <Check className="size-3" />
                             ) : null}
-                            {item.isActive ? 'Connected' : 'Disabled'}
+                            {item.isActive ? 'Configured' : 'Disabled'}
                           </Badge>
                         </div>
                         <p className="mt-1 text-[10px] text-[#817d90]">
@@ -475,37 +402,6 @@ export default function SettingsPage() {
                           Updated{' '}
                           {new Date(item.updatedAt).toLocaleDateString()}
                         </p>
-                        {configurableModelProviders.includes(item.provider) ? (
-                          <div className="mt-3 flex flex-col gap-2 sm:flex-row">
-                            <Input
-                              aria-label={`${humanize(item.provider)} model for ${item.label}`}
-                              placeholder={
-                                item.provider === 'OPENROUTER'
-                                  ? 'Provider/model ID from OpenRouter'
-                                  : 'OpenAI model ID'
-                              }
-                              value={modelDrafts[item.id] ?? ''}
-                              onChange={(event) =>
-                                setModelDrafts((current) => ({
-                                  ...current,
-                                  [item.id]: event.target.value,
-                                }))
-                              }
-                              className="h-9 flex-1"
-                            />
-                            <Button
-                              type="button"
-                              variant="outline"
-                              disabled={savingModelId === item.id}
-                              onClick={() => void saveCredentialModel(item)}
-                              className="h-9"
-                            >
-                              {savingModelId === item.id
-                                ? 'Saving…'
-                                : 'Save model'}
-                            </Button>
-                          </div>
-                        ) : null}
                       </div>
                       <div className="flex gap-1">
                         <Button

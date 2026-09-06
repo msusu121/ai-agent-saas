@@ -1,6 +1,5 @@
 generator client {
   provider = "prisma-client-js"
-  binaryTargets = ["native", "windows"]
 }
 
 datasource db {
@@ -32,6 +31,7 @@ enum CredentialProvider {
   CLEARBIT
   HUBSPOT
   META
+  APIFY
   WHATSAPP
   RESEND
   SENDGRID
@@ -188,15 +188,27 @@ model Campaign {
   locations      String[]
   industries     String[]
   businessSize   String?
-  failureReason  String?
+  discoverySources String[]     @default(["GOOGLE_PLACES", "WEB"])
+  discoveryReport Json?
   targetCount    Int            @default(25)
   status         CampaignStatus @default(DRAFT)
   createdAt      DateTime       @default(now())
   updatedAt      DateTime       @updatedAt
   organization   Organization   @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  leads          Lead[]
+    leads          Lead[]
+    apifyRuns      ApifyDiscoveryRun[]
 
   @@index([organizationId, status, createdAt])
+}
+
+model ApifyDiscoveryRun {
+  id String @id
+  campaignId String
+  organizationId String
+  source String
+  runId String?
+  campaign Campaign @relation(fields: [campaignId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Lead {
