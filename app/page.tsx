@@ -119,9 +119,7 @@ export default function Dashboard() {
   const [notice, setNotice] = useState('');
   const [saving, setSaving] = useState(false);
   const [drafting, setDrafting] = useState(false);
-  const [offer, setOffer] = useState(
-    'School attendance and parent notification software',
-  );
+  const [offer, setOffer] = useState('');
   const [location, setLocation] = useState('Coast, Kenya');
   const [industry, setIndustry] = useState('Private schools');
   const [businessSize, setBusinessSize] = useState('Any size');
@@ -323,6 +321,7 @@ export default function Dashboard() {
                 onChange={(e) => setOffer(e.target.value)}
                 className="min-w-0 flex-1 bg-transparent text-xs font-semibold outline-none"
               />
+              {offer && <button type="button" aria-label="Clear product or service" onClick={() => setOffer('')} className="rounded-md px-1 text-xs text-[#817d90] hover:bg-violet-50">Cancel</button>}
               <span className="text-[9px] text-[#aaa6b5]">
                 {offer.length}/200
               </span>
