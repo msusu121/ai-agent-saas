@@ -40,7 +40,23 @@ export const autopilotWorker = new Worker('autopilot-cycle', async (job) => {
     const highValue = config.highValueThreshold !== null && lead.estimatedValue !== null && lead.estimatedValue.greaterThanOrEqualTo(config.highValueThreshold);
     const needsReview = config.approvalMode === 'ALL' || (config.approvalMode === 'HIGH_VALUE_ONLY' && highValue);
     const message = await prisma.outreachMessage.create({ data: { organizationId, leadId: lead.id, channel: useEmail ? 'EMAIL' : 'WHATSAPP', recipient, subject: draft.subject, body: draft.body, status: needsReview ? 'NEEDS_REVIEW' : 'SCHEDULED', ...(!needsReview ? { scheduledFor: new Date() } : {}) } });
-    if (!needsReview) await outreachQueue.add('deliver', { messageId: message.id, organizationId }, { jobId: `outreach:${message.id}` });
+    if (!needsReview) {
+      try {
+        await outreachQueue.add('deliver', { messageId: message.id, organizationId }, { jobId: `outreach-${message.id}` });
+      } catch (error) {
+        // Keep the generated draft visible and block delivery after an enqueue failure.
+        // Guard the update so a worker that already claimed it is not rolled back.
+        await prisma.outreachMessage.updateMany({
+          where: { id: message.id, organizationId, status: 'SCHEDULED' },
+          data: {
+            status: 'NEEDS_REVIEW',
+            scheduledFor: null,
+            failureReason: 'Delivery could not be queued. Review this draft before scheduling again.',
+          },
+        });
+        throw error;
+      }
+    }
     created += 1;
   }
   return { created };

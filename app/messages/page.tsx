@@ -18,8 +18,11 @@ type Message = { id: string; leadId: string; channel: 'EMAIL' | 'WHATSAPP'; stat
 export default function MessagesPage() {
   const [messages, setMessages] = useState<Message[]>([]); const [leads, setLeads] = useState<Lead[]>([]); const [selectedLeadId, setSelectedLeadId] = useState(''); const [search, setSearch] = useState(''); const [text, setText] = useState(''); const [editing, setEditing] = useState<Message | null>(null); const [notice, setNotice] = useState(''); const [error, setError] = useState(''); const [generating, setGenerating] = useState(false);
   const load = useCallback(async () => { try { const [messageBody, leadBody] = await Promise.all([apiRequest<{ messages: Message[] }>('/outreach?limit=200'), apiRequest<{ leads: Lead[] }>('/leads?limit=100')]); setMessages(messageBody.messages); setLeads(leadBody.leads); setSelectedLeadId((current) => current || leadBody.leads[0]?.id || ''); setError(''); } catch (caught) { setError(caught instanceof Error ? caught.message : 'Unable to load messages'); } }, []);
-  useEffect(() => { const requestedLead = new URLSearchParams(window.location.search).get('lead'); if (requestedLead) setSelectedLeadId(requestedLead); void load(); }, [load]);
-  const filteredLeads = leads.filter((lead) => lead.name.toLowerCase().includes(search.toLowerCase())); const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? null; const thread = messages.filter((message) => message.leadId === selectedLeadId).sort((a,b) => a.createdAt.localeCompare(b.createdAt));
+  useEffect(() => { const params = new URLSearchParams(window.location.search); const requestedLead = params.get('lead'); if (requestedLead) setSelectedLeadId(requestedLead); void load(); }, [load]);
+  const followup = new URLSearchParams(typeof window === 'undefined' ? '' : window.location.search).get('filter') === 'followup';
+  const scopedMessages = followup ? messages.filter((message) => ['NEEDS_REVIEW', 'SCHEDULED', 'SENDING', 'FAILED'].includes(message.status)) : messages;
+  const scopedLeadIds = new Set(scopedMessages.map((message) => message.leadId));
+  const filteredLeads = leads.filter((lead) => (!followup || scopedLeadIds.has(lead.id)) && lead.name.toLowerCase().includes(search.toLowerCase())); const selectedLead = leads.find((lead) => lead.id === selectedLeadId) ?? null; const thread = scopedMessages.filter((message) => message.leadId === selectedLeadId).sort((a,b) => a.createdAt.localeCompare(b.createdAt));
   const suggestion = [...thread].reverse().find(message => ['DRAFT', 'NEEDS_REVIEW'].includes(message.status))?.body ?? '';
   const pendingDelivery = useRef<{ leadId: string; body: string; attempts: DeliveryAttempt[] } | null>(null);
   const sending = useRef(false);

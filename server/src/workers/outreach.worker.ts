@@ -39,7 +39,17 @@ export const outreachWorker = new Worker(
         recommendedOffer: message.lead.recommendedOffer,
       } : null,
     };
-    const providerId = await deliverOutreach(deliveryMessage);
+    let providerId: string;
+    try {
+      providerId = await deliverOutreach(deliveryMessage);
+    } catch (error) {
+      // A provider 429 means the attempt was not accepted. Release the local
+      // daily counter and let BullMQ retry after its backoff window.
+      if (error instanceof Error && /too many requests|rate limit|429/i.test(error.message)) {
+        await redis.decr(rateKey);
+      }
+      throw error;
+    }
     await prisma.outreachMessage.update({
       where: { id: message.id },
       data: { status: 'SENT', sentAt: new Date(), providerId },
@@ -47,15 +57,21 @@ export const outreachWorker = new Worker(
     console.info(`[outreach] delivered message=${message.id} channel=${message.channel} recipient=${message.recipient} provider=${providerId}`);
     return { sent: true };
   },
-  { connection: queueRedis, concurrency: 5, limiter: { max: 20, duration: 1_000 } },
+  // Stay below the strictest configured provider limit (Resend currently
+  // allows ten requests/second) so a burst cannot exhaust all retries.
+  { connection: queueRedis, concurrency: 1, limiter: { max: 8, duration: 1_000 } },
 );
 
 outreachWorker.on('failed', async (job, error) => {
   const data = job?.data as { messageId?: string } | undefined;
   if (data?.messageId) {
+    const retryableRateLimit = /too many requests|rate limit|429/i.test(error.message);
+    const retrying = retryableRateLimit && Boolean(job && job.attemptsMade < (job.opts.attempts ?? 1));
     await prisma.outreachMessage.updateMany({
       where: { id: data.messageId, status: { in: ['SCHEDULED', 'SENDING'] } },
-      data: { status: 'FAILED', failureReason: error.message.slice(0, 500) },
+      data: retrying
+        ? { status: 'SCHEDULED', failureReason: `Provider rate limit reached; retry ${job!.attemptsMade + 1} is scheduled automatically.` }
+        : { status: 'FAILED', failureReason: error.message.slice(0, 500) },
     });
     console.error(`[outreach] delivery failed message=${data.messageId}: ${error.message}`);
   }

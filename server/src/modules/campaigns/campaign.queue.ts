@@ -16,7 +16,10 @@ export const outreachQueue = new Queue('outreach-delivery', {
   connection: queueRedis,
   defaultJobOptions: {
     attempts: 5,
-    backoff: { type: 'exponential', delay: 10_000 },
+    // Provider limits are commonly one to ten seconds. Give the provider a
+    // full minute before the first retry, then exponential backoff handles
+    // sustained throttling without burning all attempts in one window.
+    backoff: { type: 'exponential', delay: 60_000 },
     removeOnComplete: { age: 86_400, count: 5_000 },
     removeOnFail: { age: 1_209_600 },
   },

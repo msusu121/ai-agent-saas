@@ -121,6 +121,7 @@ model Organization {
   memberships    Membership[]
   credentials    ProviderCredential[]
   campaigns      Campaign[]
+  products       Product[]
   leads          Lead[]
   contacts       Contact[]
   sequences      Sequence[]
@@ -265,6 +266,21 @@ model Campaign {
     leads          Lead[]
     apifyRuns      ApifyDiscoveryRun[]
 
+  @@index([organizationId, status, createdAt])
+}
+
+model Product {
+  id             String       @id @default(cuid())
+  organizationId String
+  name           String
+  description    String?
+  category       String?
+  imageUrls      String[]     @default([])
+  analysis       Json?
+  status         String       @default("ACTIVE")
+  createdAt      DateTime     @default(now())
+  updatedAt      DateTime     @updatedAt
+  organization   Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   @@index([organizationId, status, createdAt])
 }
 

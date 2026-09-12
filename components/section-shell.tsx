@@ -20,6 +20,7 @@ import {
   BarChart3,
   Users,
   Workflow,
+  Package,
 } from 'lucide-react';
 
 import { Button } from '@/components/ui/button';
@@ -46,9 +47,13 @@ const routes = [
     href: '/messages?filter=followup',
   },
   { label: 'Leads', icon: Users, href: '/leads' },
+  { label: 'Products', icon: Package, href: '/products' },
+  { label: 'Content', icon: FileText, href: '/content' },
+  { label: 'Calendar', icon: Workflow, href: '/calendar' },
+  { label: 'Campaigns', icon: Send, href: '/campaigns' },
   { label: 'Pipeline', icon: Workflow, href: '/pipeline' },
   { label: 'Templates', icon: FileText, href: '/templates' },
-  { label: 'Reports', icon: BarChart3, href: '/pipeline?view=reports' },
+  { label: 'Reports', icon: BarChart3, href: '/analytics' },
   { label: 'Integrations', icon: PlugZap, href: '/settings?tab=sources' },
   { label: 'Settings', icon: Settings2, href: '/settings' },
 ];
@@ -56,9 +61,9 @@ const routes = [
 const mobileRoutes = [
   { label: 'Home', icon: LayoutDashboard, href: '/' },
   { label: 'Leads', icon: Users, href: '/leads' },
-  { label: 'Agent', icon: Sparkle, href: '/opportunities' },
+  { label: 'Agent', icon: Sparkle, href: '/content' },
   { label: 'Messages', icon: MessageCircleMore, href: '/messages' },
-  { label: 'More', icon: Settings2, href: '/settings' },
+  { label: 'More', icon: Settings2, href: '/more' },
 ];
 
 export function SectionShell({

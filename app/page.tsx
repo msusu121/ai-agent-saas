@@ -120,8 +120,8 @@ export default function Dashboard() {
   const [saving, setSaving] = useState(false);
   const [drafting, setDrafting] = useState(false);
   const [offer, setOffer] = useState('');
-  const [location, setLocation] = useState('Coast, Kenya');
-  const [industry, setIndustry] = useState('Private schools');
+  const [location, setLocation] = useState('');
+  const [industry, setIndustry] = useState('');
   const [businessSize, setBusinessSize] = useState('Any size');
   const [target, setTarget] = useState(5);
   const [discoverySources, setDiscoverySources] = useState<string[]>(defaultSources);
@@ -333,6 +333,7 @@ export default function Dashboard() {
                 value={location}
                 onChange={setLocation}
                 options={locations}
+                allowCustom
               />
               <SelectField
                 icon={Building2}
@@ -340,6 +341,7 @@ export default function Dashboard() {
                 value={industry}
                 onChange={setIndustry}
                 options={industries}
+                allowCustom
               />
               <SelectField icon={Users} label="Business size (Optional)" value={businessSize} onChange={setBusinessSize} options={businessSizes} />
             </div>
@@ -638,21 +640,25 @@ function SelectField({
   value,
   onChange,
   options,
+  allowCustom = false,
 }: {
   icon: typeof MapPin;
   label: string;
   value: string;
   onChange: (value: string) => void;
   options: string[];
+  allowCustom?: boolean;
 }) {
   return (
-    <label className="relative flex items-center gap-2 rounded-xl border px-3 py-2 focus-within:border-violet-300 focus-within:ring-2 focus-within:ring-violet-100">
+    <label className="relative flex min-w-0 flex-wrap items-center gap-2 rounded-xl border px-3 py-2 focus-within:border-violet-300 focus-within:ring-2 focus-within:ring-violet-100">
       <Icon className="size-4 shrink-0 text-[#716c82]" />
       <span className="pointer-events-none absolute left-9 top-1.5 text-[9px] text-[#8b8798]">{label}</span>
       <select aria-label={label} required value={value} onChange={(e) => onChange(e.target.value)} className="min-w-0 flex-1 appearance-none bg-transparent pb-0.5 pt-3 text-xs font-semibold outline-none">
+        <option value="" disabled>Select {label.toLowerCase()}</option>
         {options.map((option) => <option key={option} value={option}>{option}</option>)}
       </select>
       <ChevronDown className="pointer-events-none size-3.5 shrink-0 text-[#8b8798]" />
+      {allowCustom && <input aria-label={`Custom ${label.toLowerCase()}`} value={options.includes(value) ? '' : value} onChange={(e) => onChange(e.target.value)} placeholder={`Or type ${label.toLowerCase()}`} className="w-full border-t border-[#eeeaf5] bg-transparent pt-2 text-xs outline-none placeholder:text-[#aaa6b5]" />}
     </label>
   );
 }

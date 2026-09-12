@@ -1,0 +1,12 @@
+import { Router } from 'express';
+import { z } from 'zod';
+import { asyncHandler } from '../../lib/async-handler.js';
+import { prisma } from '../../lib/prisma.js';
+import { requireOrganization, requireRole } from '../../middleware/auth.js';
+const router = Router(); router.use(requireOrganization);
+const input = z.object({ name: z.string().trim().min(2).max(160), description: z.string().max(4000).optional(), category: z.string().max(100).optional(), imageUrls: z.array(z.string().url()).max(12).optional() });
+router.get('/', asyncHandler(async (req,res)=>{ const products=await prisma.product.findMany({where:{organizationId:req.auth!.organizationId!},orderBy:{createdAt:'desc'}}); res.json({products}); }));
+router.post('/', requireRole('OWNER','ADMIN','MANAGER','MEMBER'), asyncHandler(async(req,res)=>{ const data=input.parse(req.body); const product=await prisma.product.create({data:{name:data.name,description:data.description??null,category:data.category??null,imageUrls:data.imageUrls??[],organizationId:req.auth!.organizationId!}}); res.status(201).json({product}); }));
+router.get('/:id', asyncHandler(async(req,res)=>{ const product=await prisma.product.findFirst({where:{id:String(req.params.id),organizationId:req.auth!.organizationId!}}); if(!product) return res.status(404).json({error:'Product not found'}); res.json({product}); }));
+router.post('/:id/analyze', requireRole('OWNER','ADMIN','MANAGER','MEMBER'), asyncHandler(async(req,res)=>{ const product=await prisma.product.findFirst({where:{id:String(req.params.id),organizationId:req.auth!.organizationId!}}); if(!product) return res.status(404).json({error:'Product not found'}); const analysis={recommendedGoal:'GENERATE_SALES',likelyBuyers:[],recommendedChannels:['EMAIL','WHATSAPP'],confidenceScore:0}; const updated=await prisma.product.update({where:{id:product.id},data:{analysis}}); res.json({product:updated,analysis}); }));
+export { router as productRouter };
